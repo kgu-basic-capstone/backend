@@ -37,7 +37,8 @@ public class TestController {
     public ResponseEntity<List<Test>> getPage(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(List.of());
+        Test test = Test.builder().message("Hello, world!").build();
+        return ResponseEntity.ok(List.of(test));
     }
 
     @PostMapping
