@@ -1,10 +1,10 @@
-package uk.jinhy.server.service.test.example.test.member.domain;
+package uk.jinhy.server.service.test.example.test.member;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.test.context.TestComponent;
 import org.springframework.transaction.annotation.Transactional;
 import uk.jinhy.server.service.test.example.src.member.domain.Member;
 import uk.jinhy.server.service.test.example.src.member.domain.MemberRepository;
@@ -13,7 +13,7 @@ import uk.jinhy.server.service.test.example.src.member.service.MemberService;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@Component
+@TestComponent
 @Transactional
 @SpringBootTest
 class MemberServiceTest {
