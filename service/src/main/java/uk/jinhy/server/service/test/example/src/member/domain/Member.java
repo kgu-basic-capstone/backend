@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import static uk.jinhy.server.service.test.example.src.member.domain.MembershipLevel.*;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
@@ -24,7 +26,7 @@ public class Member {
     private String email;
 
     @Enumerated(EnumType.STRING)
-    private MembershipLevel membershipLevel;
+    private MembershipLevel membershipLevel = BASIC;
 
     @Builder
     private Member(String name, int age, String email, MembershipLevel membershipLevel) {
