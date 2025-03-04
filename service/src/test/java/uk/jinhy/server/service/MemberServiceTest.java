@@ -4,8 +4,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestComponent;
 import org.springframework.transaction.annotation.Transactional;
+import uk.jinhy.server.service.common.IntegrationTest;
 import uk.jinhy.server.service.member.domain.Member;
 import uk.jinhy.server.service.member.domain.MemberRepository;
 import uk.jinhy.server.service.member.service.MemberService;
@@ -13,10 +13,9 @@ import uk.jinhy.server.service.member.service.MemberService;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@TestComponent
 @Transactional
 @SpringBootTest
-class MemberServiceTest {
+class MemberServiceTest extends IntegrationTest {
 
     @Autowired
     MemberService memberService;
@@ -27,7 +26,7 @@ class MemberServiceTest {
     @DisplayName("회원가입 시 이름, 나이, 이메일이 필요하며 가입 완료 시 회원 정보를 반환한다.")
     @Test
     void saveNewMember() {
-        //given
+        // given
         String email = "test@test.com";
         Member request = Member.builder()
                 .name("testMember")
@@ -35,10 +34,10 @@ class MemberServiceTest {
                 .email(email)
                 .build();
 
-        //when
+        // when
         Member savedMember = memberService.save(request);
 
-        //then
+        // then
         assertThat(savedMember)
                 .extracting(Member::getEmail)
                 .isEqualTo(email);
@@ -47,7 +46,7 @@ class MemberServiceTest {
     @DisplayName("이미 가입된 이메일로 회원가입을 시도할 경우 예외가 발생한다.")
     @Test
     void alreadyExistsMember() {
-        //given
+        // given
         String email = "test@test.com";
         Member member = Member.builder()
                 .email(email)
@@ -55,7 +54,7 @@ class MemberServiceTest {
 
         memberRepository.save(member);
 
-        //when & then
+        // when & then
         assertThatThrownBy(() -> memberService.save(member))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("이미 가입된 이메일입니다.");
