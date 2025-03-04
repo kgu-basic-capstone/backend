@@ -22,6 +22,9 @@ public abstract class IntegrationTest {
     protected static final GenericContainer<?> redisContainer;
 
     static {
+        System.setProperty("testcontainers.reuse.enable", "true");
+        System.setProperty("testcontainers.ryuk.disabled", "true");
+
         mysqlContainer = new MySQLContainer<>(DockerImageName.parse("mysql:8"))
                 .withDatabaseName("test")
                 .withUsername("test")
