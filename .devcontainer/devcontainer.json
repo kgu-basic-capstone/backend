@@ -5,9 +5,14 @@
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
+  "runArgs": ["--privileged"],
   "features": {
     "ghcr.io/devcontainers/features/java:1": {
       "version": "17"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": true
     }
   },
   "forwardPorts": [3306, 6379, 9092],
@@ -31,27 +36,21 @@
         "com.intellij.spring.data",
         "com.intellij.spring.mvc",
         "com.intellij.spring.security",
-
         "com.intellij.database",
         "org.jetbrains.plugins.redis",
-
         "ch.dasoft.kafka.idea",
         "com.github.kafkakv.kafka-viewer",
-
         "com.intellij.javaee.jpa",
         "com.intellij.persistence",
         "org.jetbrains.plugins.gradle",
         "com.intellij.java",
-
         "CheckStyle-IDEA",
-
         "Git4Idea",
         "org.jetbrains.plugins.github",
-
         "JUnit",
         "org.jetbrains.plugins.junit"
       ]
-    },
+    }
   },
   "postCreateCommand": "mkdir -p .idea && cp -n .devcontainer/dataSources.xml .idea/ || true"
 }

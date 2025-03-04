@@ -5,6 +5,7 @@ services:
     command: /bin/sh -c "while sleep 1000; do :; done"
     extra_hosts:
       - 'host.docker.internal:host-gateway'
+    privileged: true
     environment:
       - DB_URL=jdbc:mysql://mysql:3306/myapp_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
       - DB_NAME=myapp_db
@@ -17,6 +18,9 @@ services:
       - JWT_SECRET=dev_jwt_secret_key
       - JWT_EXPIRATION_MS=86400000
       - SERVER_PORT=8080
+      - TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - mysql
       - kafka
@@ -35,14 +39,12 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-
   redis:
     image: redis:7
     container_name: myapp-redis
     ports:
       - "6379:6379"
     command: redis-server --requirepass myapp_password
-
   kafka:
     image: confluentinc/cp-kafka:7.4.0
     container_name: myapp-kafka
@@ -57,13 +59,11 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     container_name: myapp-zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-
 volumes:
   mysql_data:
