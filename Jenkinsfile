@@ -12,8 +12,8 @@ spec:
     volumeMounts:
     - name: workspace-volume
       mountPath: /home/jenkins/agent
-  - name: gradle
-    image: gradle:7.6-jdk17
+  - name: builder
+    image: eclipse-temurin:17-jdk
     command:
     - sleep
     args:
@@ -57,9 +57,10 @@ spec:
 
         stage('Test with Testcontainers') {
             steps {
-                container('gradle') {
+                container('builder') {
                     sh '''
-                    gradle clean test
+                    chmod +x ./gradlew
+                    ./gradlew clean test
                     '''
                 }
             }
@@ -151,7 +152,7 @@ spec:
             }
         }
         cleanup {
-            deleteDir()
+            cleanWs()
         }
     }
 }
