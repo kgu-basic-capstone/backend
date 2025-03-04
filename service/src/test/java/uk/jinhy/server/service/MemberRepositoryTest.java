@@ -1,4 +1,4 @@
-package uk.jinhy.server.service.test.example.test.member;
+package uk.jinhy.server.service.test.member;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -6,11 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestComponent;
 import org.springframework.transaction.annotation.Transactional;
-import uk.jinhy.server.service.test.example.src.member.domain.Member;
-import uk.jinhy.server.service.test.example.src.member.domain.MemberRepository;
+import uk.jinhy.server.service.member.domain.Member;
+import uk.jinhy.server.service.member.domain.MemberRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.jinhy.server.service.test.example.src.member.domain.MembershipLevel.BASIC;
+import static uk.jinhy.server.service.member.domain.MembershipLevel.BASIC;
 
 @TestComponent
 @Transactional

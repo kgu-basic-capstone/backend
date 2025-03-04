@@ -1,4 +1,4 @@
-package uk.jinhy.server.service.test.example.src.member.domain;
+package uk.jinhy.server.service.member.domain;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

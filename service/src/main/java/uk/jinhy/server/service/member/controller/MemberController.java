@@ -1,13 +1,13 @@
-package uk.jinhy.server.service.test.example.src.member.controller;
+package uk.jinhy.server.service.member.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import uk.jinhy.server.service.test.example.src.api.ApiResponse;
-import uk.jinhy.server.service.test.example.src.member.domain.Member;
-import uk.jinhy.server.service.test.example.src.member.service.MemberService;
+import uk.jinhy.server.service.global.api.ApiResponse;
+import uk.jinhy.server.service.member.domain.Member;
+import uk.jinhy.server.service.member.service.MemberService;
 
 @RequiredArgsConstructor
 @RestController

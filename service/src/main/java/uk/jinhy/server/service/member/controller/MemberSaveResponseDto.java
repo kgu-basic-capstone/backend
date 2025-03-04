@@ -1,7 +1,7 @@
-package uk.jinhy.server.service.test.example.src.member.controller;
+package uk.jinhy.server.service.member.controller;
 
 import lombok.Getter;
-import uk.jinhy.server.service.test.example.src.member.domain.Member;
+import uk.jinhy.server.service.member.domain.Member;
 
 @Getter
 public class MemberSaveResponseDto {

@@ -1,4 +1,4 @@
-package uk.jinhy.server.service.test.example.test.member;
+package uk.jinhy.server.service.test.member;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,10 +11,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import uk.jinhy.server.service.test.example.src.member.controller.MemberController;
-import uk.jinhy.server.service.test.example.src.member.controller.MemberSaveRequestDto;
-import uk.jinhy.server.service.test.example.src.member.domain.Member;
-import uk.jinhy.server.service.test.example.src.member.service.MemberService;
+import uk.jinhy.server.service.member.controller.MemberController;
+import uk.jinhy.server.service.member.controller.MemberSaveRequestDto;
+import uk.jinhy.server.service.member.domain.Member;
+import uk.jinhy.server.service.member.service.MemberService;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;

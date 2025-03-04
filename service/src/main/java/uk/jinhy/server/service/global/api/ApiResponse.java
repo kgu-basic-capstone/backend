@@ -1,4 +1,4 @@
-package uk.jinhy.server.service.test.example.src.api;
+package uk.jinhy.server.service.global.api;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

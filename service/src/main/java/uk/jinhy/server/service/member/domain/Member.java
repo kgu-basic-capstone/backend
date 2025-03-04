@@ -1,4 +1,4 @@
-package uk.jinhy.server.service.test.example.src.member.domain;
+package uk.jinhy.server.service.member.domain;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import static uk.jinhy.server.service.test.example.src.member.domain.MembershipLevel.*;
+import static uk.jinhy.server.service.member.domain.MembershipLevel.*;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

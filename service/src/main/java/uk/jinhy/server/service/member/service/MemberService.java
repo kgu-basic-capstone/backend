@@ -1,10 +1,10 @@
-package uk.jinhy.server.service.test.example.src.member.service;
+package uk.jinhy.server.service.member.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.jinhy.server.service.test.example.src.member.domain.Member;
-import uk.jinhy.server.service.test.example.src.member.domain.MemberRepository;
+import uk.jinhy.server.service.member.domain.Member;
+import uk.jinhy.server.service.member.domain.MemberRepository;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
