@@ -43,9 +43,9 @@ class MemberEntityControllerTest {
         objectMapper = new ObjectMapper();
     }
 
-    @DisplayName("회원가입에 성공하면 http 상태와 메시지, 회원 정보를 반환한다.")
+    @DisplayName("회원가입에 성공하는 경우 http 상태와 메시지, 회원 정보를 반환한다.")
     @Test
-    void saveSuccess() throws Exception {
+    void 회원가입_성공시_응답결과() throws Exception {
         //given
         MemberDto.MemberSaveRequestDto request = MemberDto.MemberSaveRequestDto.builder()
                 .name("testMember")
