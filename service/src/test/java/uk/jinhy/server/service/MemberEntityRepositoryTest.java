@@ -4,18 +4,17 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import uk.jinhy.server.service.common.IntegrationTest;
-import uk.jinhy.server.service.member.domain.Member;
+import uk.jinhy.server.service.member.domain.MemberEntity;
 import uk.jinhy.server.service.member.domain.MemberRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.jinhy.server.service.member.domain.MembershipLevel.BASIC;
+import static uk.jinhy.server.api.member.domain.MembershipLevel.BASIC;
 
 @Transactional
 @SpringBootTest
-class MemberRepositoryTest extends IntegrationTest {
+class MemberEntityRepositoryTest extends IntegrationTest {
 
     @Autowired
     MemberRepository memberRepository;
@@ -26,7 +25,7 @@ class MemberRepositoryTest extends IntegrationTest {
         // given
         String email = "test@test.com";
 
-        Member testMember = Member.builder()
+        MemberEntity testMember = MemberEntity.builder()
                 .name("testMember")
                 .age(20)
                 .email(email)

@@ -1,11 +1,10 @@
-package uk.jinhy.server.service.global.api;
+package uk.jinhy.server.api.common;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
 public class ApiResponse<T> {
-
     private HttpStatus status;
     private String message;
     private T data;

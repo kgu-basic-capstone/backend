@@ -1,4 +1,4 @@
-package uk.jinhy.server.service.member.domain;
+package uk.jinhy.server.api.member.domain;
 
 public enum MembershipLevel {
     BASIC, VIP

@@ -2,18 +2,17 @@ package uk.jinhy.server.service.member.domain;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import uk.jinhy.server.api.member.domain.MembershipLevel;
 
-import static uk.jinhy.server.service.member.domain.MembershipLevel.*;
+import static uk.jinhy.server.api.member.domain.MembershipLevel.*;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 @Entity
-public class Member {
-
+public class MemberEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,12 +26,4 @@ public class Member {
 
     @Enumerated(EnumType.STRING)
     private MembershipLevel membershipLevel = BASIC;
-
-    @Builder
-    private Member(String name, int age, String email, MembershipLevel membershipLevel) {
-        this.name = name;
-        this.age = age;
-        this.email = email;
-        this.membershipLevel = membershipLevel;
-    }
 }

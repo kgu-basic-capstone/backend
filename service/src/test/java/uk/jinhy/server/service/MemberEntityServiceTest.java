@@ -4,22 +4,22 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+import uk.jinhy.server.api.member.domain.Member;
 import uk.jinhy.server.service.common.IntegrationTest;
-import uk.jinhy.server.service.member.domain.Member;
+import uk.jinhy.server.service.member.domain.MemberEntity;
 import uk.jinhy.server.service.member.domain.MemberRepository;
-import uk.jinhy.server.service.member.service.MemberService;
+import uk.jinhy.server.service.member.service.MemberServiceImpl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Transactional
 @SpringBootTest
-class MemberServiceTest extends IntegrationTest {
+class MemberEntityServiceTest extends IntegrationTest {
 
     @Autowired
-    MemberService memberService;
+    MemberServiceImpl memberService;
 
     @Autowired
     MemberRepository memberRepository;
@@ -49,11 +49,14 @@ class MemberServiceTest extends IntegrationTest {
     void alreadyExistsMember() {
         // given
         String email = "test@test.com";
+        MemberEntity memberEntity = MemberEntity.builder()
+                .email(email)
+                .build();
         Member member = Member.builder()
                 .email(email)
                 .build();
 
-        memberRepository.save(member);
+        memberRepository.save(memberEntity);
 
         // when & then
         assertThatThrownBy(() -> memberService.save(member))

@@ -11,10 +11,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import uk.jinhy.server.service.member.controller.MemberController;
-import uk.jinhy.server.service.member.controller.MemberSaveRequestDto;
-import uk.jinhy.server.service.member.domain.Member;
-import uk.jinhy.server.service.member.service.MemberService;
+import uk.jinhy.server.api.member.domain.Member;
+import uk.jinhy.server.api.member.presentation.MemberDto;
+import uk.jinhy.server.service.member.controller.MemberControllerImpl;
+import uk.jinhy.server.service.member.domain.MemberEntity;
+import uk.jinhy.server.service.member.service.MemberServiceImpl;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -24,13 +25,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
-class MemberControllerTest {
+class MemberEntityControllerTest {
 
     @InjectMocks
-    MemberController memberController;
+    MemberControllerImpl memberController;
 
     @Mock
-    MemberService memberService;
+    MemberServiceImpl memberService;
 
     MockMvc mockMvc;
 
@@ -46,7 +47,7 @@ class MemberControllerTest {
     @Test
     void saveSuccess() throws Exception {
         //given
-        MemberSaveRequestDto request = MemberSaveRequestDto.builder()
+        MemberDto.MemberSaveRequestDto request = MemberDto.MemberSaveRequestDto.builder()
                 .name("testMember")
                 .age(20)
                 .email("test@test.com")
