@@ -82,22 +82,22 @@ spec:
 
                         if (prNumber) {
                             def testSummary = sh(script: '''
-                                if [ -d "build/test-results/" ]; then
+                                if [ -d "**/build/test-results/" ] || [ -d "service/build/test-results/" ] || [ -d "api/build/test-results/" ]; then
                                   echo "### 테스트 결과 요약"
-                                  echo "✅ 전체 테스트: $(grep -r "tests=" build/test-results/ | awk -F "tests=" '{sum += $2; gsub(/[^0-9].*/, "", $2); sum += $2} END {print sum}')"
-                                  echo "❌ 실패한 테스트: $(grep -r "failures=" build/test-results/ | awk -F "failures=" '{sum += $2; gsub(/[^0-9].*/, "", $2); sum += $2} END {print sum}')"
-                                  echo "⚠️ 스킵된 테스트: $(grep -r "skipped=" build/test-results/ | awk -F "skipped=" '{sum += $2; gsub(/[^0-9].*/, "", $2); sum += $2} END {print sum}')"
-                                  echo "⏱️ 총 소요 시간: $(grep -r "time=" build/test-results/ | awk -F "time=" '{sum += $2; gsub(/[^0-9.].*/, "", $2); sum += $2} END {print sum}') 초"
+                                  echo "✅ 전체 테스트: $(find . -path "**/build/test-results/**/*.xml" -exec grep -l "tests=" {} \\; | xargs grep "tests=" | awk -F "tests=" '{sum += $2; gsub(/[^0-9].*/, "", $2); sum += $2} END {print sum}')"
+                                  echo "❌ 실패한 테스트: $(find . -path "**/build/test-results/**/*.xml" -exec grep -l "failures=" {} \\; | xargs grep "failures=" | awk -F "failures=" '{sum += $2; gsub(/[^0-9].*/, "", $2); sum += $2} END {print sum}')"
+                                  echo "⚠️ 스킵된 테스트: $(find . -path "**/build/test-results/**/*.xml" -exec grep -l "skipped=" {} \\; | xargs grep "skipped=" | awk -F "skipped=" '{sum += $2; gsub(/[^0-9].*/, "", $2); sum += $2} END {print sum}')"
+                                  echo "⏱️ 총 소요 시간: $(find . -path "**/build/test-results/**/*.xml" -exec grep -l "time=" {} \\; | xargs grep "time=" | awk -F "time=" '{sum += $2; gsub(/[^0-9.].*/, "", $2); sum += $2} END {print sum}') 초"
                                 else
-                                  echo "### 테스트 결과 없음"
-                                  echo "테스트 결과 파일을 찾을 수 없습니다."
+                                  echo "### 테스트 결과 요약"
+                                  echo "✅ 전체 테스트: $(find . -path "**/build/test-results/**/*.xml" -exec grep -l "tests=" {} \\; | wc -l)"
+                                  echo "❌ 실패한 테스트: $(find . -path "**/build/test-results/**/*.xml" -exec grep -l "failures=[^0]" {} \\; | wc -l)"
+                                  echo "⚠️ 스킵된 테스트: $(find . -path "**/build/test-results/**/*.xml" -exec grep -l "skipped=[^0]" {} \\; | wc -l)"
                                 fi
                             ''', returnStdout: true).trim()
 
                             def failedTests = sh(script: '''
-                                if [ -d "build/test-results/" ]; then
-                                  grep -r "failure message" build/test-results/ | awk -F "failure message=" '{print "* " $2}' | sed 's/"//g' || true
-                                fi
+                                find . -path "**/build/test-results/**/*.xml" -exec grep -l "failure message=" {} \\; | xargs grep "failure message=" | awk -F "failure message=" '{print "* " $2}' | sed 's/"//g' || true
                             ''', returnStdout: true).trim()
 
                             if (failedTests) {
@@ -105,13 +105,13 @@ spec:
                             }
 
                             withCredentials([usernamePassword(credentialsId: 'github-credentials', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USERNAME')]) {
-                                sh """
+                                sh '''
                                     curl -X POST \
-                                    -H "Authorization: token ${GITHUB_TOKEN}" \
+                                    -H "Authorization: token ''' + "${GITHUB_TOKEN}" + '''" \
                                     -H "Accept: application/vnd.github.v3+json" \
-                                    https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${prNumber}/comments \
-                                    -d '{"body": "## 테스트 결과 보고 (Build #${BUILD_NUMBER})\n\n${testSummary.replace('\n', '\\n').replace('"', '\\"')}"}'
-                                """
+                                    https://api.github.com/repos/''' + "${GITHUB_REPOSITORY}" + '''/issues/''' + "${prNumber}" + '''/comments \
+                                    -d "{\\"body\\": \\"## 테스트 결과 보고 (Build #''' + "${BUILD_NUMBER}" + ''')\n\n''' + "${testSummary.replace('\n', '\\n').replace('"', '\\\\"')}" + '''\\"}"
+                                '''
                             }
                         }
                     }
@@ -125,13 +125,13 @@ spec:
             script {
                 if (env.CHANGE_ID) {
                     withCredentials([usernamePassword(credentialsId: 'github-credentials', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USERNAME')]) {
-                        sh """
+                        sh '''
                             curl -X POST \
-                            -H "Authorization: token ${GITHUB_TOKEN}" \
+                            -H "Authorization: token ''' + "${GITHUB_TOKEN}" + '''" \
                             -H "Accept: application/vnd.github.v3+json" \
-                            https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/${GIT_COMMIT} \
-                            -d '{"state": "success", "context": "jenkins/tests", "description": "All tests passed", "target_url": "${BUILD_URL}"}'
-                        """
+                            https://api.github.com/repos/''' + "${GITHUB_REPOSITORY}" + '''/statuses/''' + "${GIT_COMMIT}" + ''' \
+                            -d "{\\"state\\": \\"success\\", \\"context\\": \\"jenkins/tests\\", \\"description\\": \\"All tests passed\\", \\"target_url\\": \\"''' + "${BUILD_URL}" + '\\"}"
+                        '''
                     }
                 }
             }
@@ -140,19 +140,16 @@ spec:
             script {
                 if (env.CHANGE_ID) {
                     withCredentials([usernamePassword(credentialsId: 'github-credentials', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USERNAME')]) {
-                        sh """
+                        sh '''
                             curl -X POST \
-                            -H "Authorization: token ${GITHUB_TOKEN}" \
+                            -H "Authorization: token ''' + "${GITHUB_TOKEN}" + '''" \
                             -H "Accept: application/vnd.github.v3+json" \
-                            https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/${GIT_COMMIT} \
-                            -d '{"state": "failure", "context": "jenkins/tests", "description": "Tests failed", "target_url": "${BUILD_URL}"}'
-                        """
+                            https://api.github.com/repos/''' + "${GITHUB_REPOSITORY}" + '''/statuses/''' + "${GIT_COMMIT}" + ''' \
+                            -d "{\\"state\\": \\"failure\\", \\"context\\": \\"jenkins/tests\\", \\"description\\": \\"Tests failed\\", \\"target_url\\": \\"''' + "${BUILD_URL}" + '\\"}"
+                        '''
                     }
                 }
             }
-        }
-        cleanup {
-            cleanWs()
         }
     }
 }
