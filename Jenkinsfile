@@ -12,8 +12,8 @@ spec:
     volumeMounts:
     - name: workspace-volume
       mountPath: /home/jenkins/agent
-  - name: docker
-    image: docker:24.0.6-cli
+  - name: gradle
+    image: gradle:7.6-jdk17
     command:
     - sleep
     args:
@@ -26,6 +26,8 @@ spec:
     env:
     - name: DOCKER_HOST
       value: unix:///var/run/docker.sock
+    - name: TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE
+      value: /var/run/docker.sock
   volumes:
   - name: workspace-volume
     emptyDir: {}
@@ -43,6 +45,7 @@ spec:
 
     environment {
         GITHUB_CREDENTIALS = credentials('github-credentials')
+        GITHUB_REPOSITORY = "kgu-basic-capstone/backend"
     }
 
     stages {
@@ -54,13 +57,9 @@ spec:
 
         stage('Test with Testcontainers') {
             steps {
-                container('docker') {
+                container('gradle') {
                     sh '''
-                    export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
-                    export DOCKER_HOST=unix:///var/run/docker.sock
-
-                    chmod +x ./gradlew
-                    ./gradlew clean test
+                    gradle clean test
                     '''
                 }
             }
@@ -82,15 +81,22 @@ spec:
 
                         if (prNumber) {
                             def testSummary = sh(script: '''
-                                echo "### 테스트 결과 요약"
-                                echo "✅ 전체 테스트: $(grep -r "tests=" build/test-results/ | awk -F "tests=" '{sum += \$2; gsub(/[^0-9].*/, "", \$2); sum += \$2} END {print sum}')"
-                                echo "❌ 실패한 테스트: $(grep -r "failures=" build/test-results/ | awk -F "failures=" '{sum += \$2; gsub(/[^0-9].*/, "", \$2); sum += \$2} END {print sum}')"
-                                echo "⚠️ 스킵된 테스트: $(grep -r "skipped=" build/test-results/ | awk -F "skipped=" '{sum += \$2; gsub(/[^0-9].*/, "", \$2); sum += \$2} END {print sum}')"
-                                echo "⏱️ 총 소요 시간: $(grep -r "time=" build/test-results/ | awk -F "time=" '{sum += \$2; gsub(/[^0-9.].*/, "", \$2); sum += \$2} END {print sum}') 초"
+                                if [ -d "build/test-results/" ]; then
+                                  echo "### 테스트 결과 요약"
+                                  echo "✅ 전체 테스트: $(grep -r "tests=" build/test-results/ | awk -F "tests=" '{sum += $2; gsub(/[^0-9].*/, "", $2); sum += $2} END {print sum}')"
+                                  echo "❌ 실패한 테스트: $(grep -r "failures=" build/test-results/ | awk -F "failures=" '{sum += $2; gsub(/[^0-9].*/, "", $2); sum += $2} END {print sum}')"
+                                  echo "⚠️ 스킵된 테스트: $(grep -r "skipped=" build/test-results/ | awk -F "skipped=" '{sum += $2; gsub(/[^0-9].*/, "", $2); sum += $2} END {print sum}')"
+                                  echo "⏱️ 총 소요 시간: $(grep -r "time=" build/test-results/ | awk -F "time=" '{sum += $2; gsub(/[^0-9.].*/, "", $2); sum += $2} END {print sum}') 초"
+                                else
+                                  echo "### 테스트 결과 없음"
+                                  echo "테스트 결과 파일을 찾을 수 없습니다."
+                                fi
                             ''', returnStdout: true).trim()
 
                             def failedTests = sh(script: '''
-                                grep -r "failure message" build/test-results/ | awk -F "failure message=" '{print "* " \$2}' | sed 's/"//g' || true
+                                if [ -d "build/test-results/" ]; then
+                                  grep -r "failure message" build/test-results/ | awk -F "failure message=" '{print "* " $2}' | sed 's/"//g' || true
+                                fi
                             ''', returnStdout: true).trim()
 
                             if (failedTests) {
@@ -102,7 +108,7 @@ spec:
                                     curl -X POST \
                                     -H "Authorization: token ${GITHUB_TOKEN}" \
                                     -H "Accept: application/vnd.github.v3+json" \
-                                    https://api.github.com/repos/\${GITHUB_REPOSITORY}/issues/${prNumber}/comments \
+                                    https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${prNumber}/comments \
                                     -d '{"body": "## 테스트 결과 보고 (Build #${BUILD_NUMBER})\n\n${testSummary.replace('\n', '\\n').replace('"', '\\"')}"}'
                                 """
                             }
@@ -122,7 +128,7 @@ spec:
                             curl -X POST \
                             -H "Authorization: token ${GITHUB_TOKEN}" \
                             -H "Accept: application/vnd.github.v3+json" \
-                            https://api.github.com/repos/\${GITHUB_REPOSITORY}/statuses/\${GIT_COMMIT} \
+                            https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/${GIT_COMMIT} \
                             -d '{"state": "success", "context": "jenkins/tests", "description": "All tests passed", "target_url": "${BUILD_URL}"}'
                         """
                     }
@@ -137,7 +143,7 @@ spec:
                             curl -X POST \
                             -H "Authorization: token ${GITHUB_TOKEN}" \
                             -H "Accept: application/vnd.github.v3+json" \
-                            https://api.github.com/repos/\${GITHUB_REPOSITORY}/statuses/\${GIT_COMMIT} \
+                            https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/${GIT_COMMIT} \
                             -d '{"state": "failure", "context": "jenkins/tests", "description": "Tests failed", "target_url": "${BUILD_URL}"}'
                         """
                     }
