@@ -15,7 +15,6 @@ import static uk.jinhy.server.service.member.domain.MembershipLevel.BASIC;
 
 @Transactional
 @SpringBootTest
-@ActiveProfiles("test")
 class MemberRepositoryTest extends IntegrationTest {
 
     @Autowired
