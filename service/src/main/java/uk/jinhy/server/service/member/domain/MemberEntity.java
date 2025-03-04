@@ -24,6 +24,7 @@ public class MemberEntity {
     @Email
     private String email;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     private MembershipLevel membershipLevel = BASIC;
 }
