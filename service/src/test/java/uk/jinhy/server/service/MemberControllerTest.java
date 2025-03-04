@@ -1,4 +1,4 @@
-package uk.jinhy.server.service.test.member;
+package uk.jinhy.server.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,4 +1,4 @@
-package uk.jinhy.server.service.test.member;
+package uk.jinhy.server.service;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
