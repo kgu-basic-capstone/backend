@@ -13,28 +13,25 @@ spec:
     - name: workspace-volume
       mountPath: /home/jenkins/agent
   - name: docker
-    image: docker:24.0.6-dind
-    privileged: true
-    resources:
-      requests:
-        memory: "1Gi"
-        cpu: "500m"
-      limits:
-        memory: "2Gi"
-        cpu: "1"
+    image: docker:24.0.6-cli
+    command:
+    - sleep
+    args:
+    - 99d
     volumeMounts:
     - name: workspace-volume
       mountPath: /home/jenkins/agent
-    - name: docker-graph-storage
-      mountPath: /var/lib/docker
+    - name: docker-sock
+      mountPath: /var/run/docker.sock
     env:
-    - name: DOCKER_TLS_CERTDIR
-      value: ""
+    - name: DOCKER_HOST
+      value: unix:///var/run/docker.sock
   volumes:
   - name: workspace-volume
     emptyDir: {}
-  - name: docker-graph-storage
-    emptyDir: {}
+  - name: docker-sock
+    hostPath:
+      path: /var/run/docker.sock
 """
         }
     }
@@ -148,7 +145,7 @@ spec:
             }
         }
         cleanup {
-            cleanWs()
+            deleteDir()
         }
     }
 }
