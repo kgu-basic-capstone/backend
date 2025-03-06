@@ -1,0 +1,63 @@
+plugins {
+  id 'java'
+  id 'com.diffplug.spotless' version '6.18.0'
+  id 'checkstyle'
+}
+
+repositories {
+  mavenCentral()
+}
+
+spotless {
+  java {
+    googleJavaFormat()
+    targetExclude("**/generated/**")
+  }
+
+  kotlin {
+    ktlint()
+    targetExclude("**/generated/**")
+  }
+
+  format 'misc', {
+    target '**/*.md', '**/*.yml', '**/*.yaml', '**/*.json'
+    trimTrailingWhitespace()
+    indentWithSpaces(2)
+    endWithNewline()
+  }
+}
+
+tasks.withType(Test) {
+  reports {
+    html.required = true
+    junitXml.required = true
+  }
+
+  testLogging {
+    events "passed", "skipped", "failed"
+    exceptionFormat "full"
+  }
+}
+
+tasks.withType(JavaCompile) {
+  options.encoding = 'UTF-8'
+  options.compilerArgs += [
+    '-Xlint:unchecked',
+    '-Xlint:deprecation',
+    '-parameters'
+  ]
+}
+
+checkstyle {
+  toolVersion = '10.3.3'
+  configFile = file("${rootDir}/.idea/checkstyleidea/checkstyle-config.xml")
+  maxErrors = 0
+  maxWarnings = 0
+  ignoreFailures = false
+}
+
+task installGitHooks(type: Copy) {
+  from new File(rootProject.rootDir, '.devcontainer/pre-commit')
+  into new File(rootProject.rootDir, '.git/hooks/')
+  fileMode 0755
+}

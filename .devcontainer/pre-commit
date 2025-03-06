@@ -1,0 +1,36 @@
+#!/bin/sh
+
+echo "Running pre-commit hooks..."
+
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep "\.java$")
+
+if [ "$STAGED_FILES" = "" ]; then
+  echo "No Java files to check"
+  exit 0
+fi
+
+echo "Running checkstyle..."
+./gradlew checkstyle --daemon
+
+if [ $? -ne 0 ]; then
+  echo "Checkstyle failed. Please fix the issues before committing."
+  exit 1
+fi
+
+echo "Running code formatting..."
+./gradlew spotlessApply --daemon
+
+if [ $? -ne 0 ]; then
+  echo "Code formatting failed. Please fix the issues before committing."
+  exit 1
+fi
+
+for FILE in $STAGED_FILES
+do
+  if [ -f "$FILE" ]; then
+    git add "$FILE"
+  fi
+done
+
+echo "Pre-commit hooks completed successfully!"
+exit 0

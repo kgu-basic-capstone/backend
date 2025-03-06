@@ -1,0 +1,65 @@
+{
+  "name": "Dev Environment",
+  "dockerComposeFile": ["./docker-compose.yml"],
+  "service": "application",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "17"
+    },
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": true,
+      "upgradePackages": true
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+      "version": "latest",
+      "helm": "latest",
+      "minikube": "none"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "forwardPorts": [3306, 6379, 9092],
+  "customizations": {
+    "jetbrains": {
+      "terminal": {
+        "shellPath": "/bin/zsh",
+        "defaultProfile": "zsh"
+      },
+      "runConfigurations": {
+        "ServiceApplication": {
+          "type": "SpringBootApplicationConfigurationType",
+          "mainClass": "uk.jinhy.server.service.ServiceApplication",
+          "module": "service.main",
+          "vmParameters": "-Dspring.profiles.active=local",
+          "envs": {
+            "SPRING_PROFILES_ACTIVE": "local"
+          },
+          "workingDirectory": "$PROJECT_DIR$"
+        }
+      },
+      "plugins": [
+        "com.intellij.spring",
+        "com.intellij.spring.boot",
+        "com.intellij.spring.data",
+        "com.intellij.spring.mvc",
+        "com.intellij.spring.security",
+        "com.intellij.database",
+        "org.jetbrains.plugins.redis",
+        "ch.dasoft.kafka.idea",
+        "com.github.kafkakv.kafka-viewer",
+        "com.intellij.javaee.jpa",
+        "com.intellij.persistence",
+        "org.jetbrains.plugins.gradle",
+        "com.intellij.java",
+        "CheckStyle-IDEA",
+        "Git4Idea",
+        "org.jetbrains.plugins.github",
+        "JUnit",
+        "org.jetbrains.plugins.junit"
+      ]
+    }
+  },
+  "postCreateCommand": "mkdir -p .idea && cp .devcontainer/dataSources.xml .idea/ || true && cp .devcontainer/zshrc ~/.zshrc || true && mkdir -p .idea/checkstyleidea && cp -n .devcontainer/checkstyle-config.xml .idea/checkstyleidea/ || true && mkdir -p ~/.zsh && git clone https://github.com/zsh-users/zsh-autosuggestions ~/.zsh/zsh-autosuggestions && git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.zsh/zsh-syntax-highlighting && mkdir -p .git/hooks && cp -n .devcontainer/pre-commit .git/hooks/ && chmod +x .git/hooks/pre-commit"
+}
