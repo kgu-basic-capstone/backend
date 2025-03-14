@@ -20,7 +20,7 @@
     },
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
-  "forwardPorts": [3306, 6379, 9092],
+  "forwardPorts": [3306, 6379, 9092, 8080],
   "customizations": {
     "jetbrains": {
       "terminal": {
