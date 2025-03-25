@@ -1,8 +1,7 @@
-package uk.jinhy.server.api.domain.user;
+package uk.jinhy.server.api.domain;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import uk.jinhy.server.api.domain.pet.Pet;
 
 import java.util.List;
 
@@ -15,11 +14,7 @@ class UserTest {
     @Test
     void 회원_이름_수정() {
         //given
-        User sut = User.builder()
-            .username("test")
-            .email("test@test.com")
-            .build();
-
+        User sut = UserFactory.create().build();
         String newName = "newName";
 
         //when
@@ -33,14 +28,10 @@ class UserTest {
     @Test
     void 반려동물_한_마리_등록() {
         //given
-        User sut = User.builder()
-            .username("testUser")
-            .email("test@test.com")
-            .build();
+        User sut = UserFactory.create().build();
 
-        Pet pet = Pet.builder()
+        Pet pet = PetFactory.create()
             .owner(sut)
-            .name("testPet")
             .build();
 
         //when
@@ -55,17 +46,14 @@ class UserTest {
     @Test
     void 반려동물_여러_마리_등록() {
         //given
-        User sut = User.builder()
-            .username("testUser")
-            .email("test@test.com")
-            .build();
+        User sut = UserFactory.create().build();
 
-        Pet pet1 = Pet.builder()
+        Pet pet1 = PetFactory.create()
             .owner(sut)
             .name("testPet1")
             .build();
 
-        Pet pet2 = Pet.builder()
+        Pet pet2 = PetFactory.create()
             .owner(sut)
             .name("testPet2")
             .build();
@@ -84,15 +72,9 @@ class UserTest {
     @Test
     void 반려동물_삭제() {
         //given
-        User sut = User.builder()
-            .username("testUser")
-            .email("test@test.com")
-            .build();
+        User sut = UserFactory.create().build();
 
-        Pet pet = Pet.builder()
-            .owner(sut)
-            .name("testPet")
-            .build();
+        Pet pet = PetFactory.create().build();
 
         sut.getPets().add(pet);
 
@@ -108,15 +90,9 @@ class UserTest {
     @Test
     void 존재하지_않는_반려동물_삭제() {
         //given
-        User sut = User.builder()
-            .username("testUser")
-            .email("test@test.com")
-            .build();
+        User sut = UserFactory.create().build();
 
-        Pet pet = Pet.builder()
-            .owner(sut)
-            .name("testPet")
-            .build();
+        Pet pet = PetFactory.create().build();
 
         //then & when
         assertThatThrownBy(() -> sut.removePet(pet))
