@@ -1,11 +1,9 @@
-package uk.jinhy.server.service.domain;
+package uk.jinhy.server.service.community.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import uk.jinhy.server.api.domain.Category;
+import lombok.*;
+import uk.jinhy.server.api.community.domain.Category;
+import uk.jinhy.server.service.domain.UserEntity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,7 +11,9 @@ import java.util.List;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "community_posts")
 public class CommunityPostEntity {
     @Id
@@ -39,23 +39,4 @@ public class CommunityPostEntity {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommunityCommentEntity> comments = new ArrayList<>();
-
-    @Builder
-    public CommunityPostEntity(UserEntity author, Category category,
-                               String title, String content) {
-        this.author = author;
-        this.category = category;
-        this.title = title;
-        this.content = content;
-        this.createdAt = LocalDateTime.now();
-    }
-
-    public CommunityCommentEntity addComment(CommunityCommentEntity comment) {
-        this.comments.add(comment);
-        return comment;
-    }
-
-    public void updateContent(String newContent) {
-        this.content = newContent;
-    }
 }
