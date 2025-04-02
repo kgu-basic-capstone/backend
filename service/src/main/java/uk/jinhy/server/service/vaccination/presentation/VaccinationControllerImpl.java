@@ -32,7 +32,7 @@ public class VaccinationControllerImpl implements VaccinationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mockResponse);
     }
 
-    @Override
+    @Override // 기능 1
     public ResponseEntity<VaccinationListResponse> getVaccinations(Long petId, Boolean completed) {
         List<VaccinationResponse> mockVaccinations = Arrays.asList(
             VaccinationResponse.builder()
