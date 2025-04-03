@@ -20,8 +20,10 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
 import org.mockito.InjectMocks;
@@ -68,10 +70,10 @@ class CommunityServiceTest {
             CommunityPost post1 = mock(CommunityPost.class);
             CommunityPost post2 = mock(CommunityPost.class);
 
-            when(postRepository.findBySearchConditions(eq(category), eq(keyword), any(PageRequest.class)))
-                .thenReturn(postEntityPage);
-            when(communityMapper.toDomain(postEntity1)).thenReturn(post1);
-            when(communityMapper.toDomain(postEntity2)).thenReturn(post2);
+            given(postRepository.findBySearchConditions(eq(category), eq(keyword), any(PageRequest.class)))
+                .willReturn(postEntityPage);
+            given(communityMapper.toDomain(postEntity1)).willReturn(post1);
+            given(communityMapper.toDomain(postEntity2)).willReturn(post2);
 
             // when
             List<CommunityPost> result = communityService.getPosts(categoryName, keyword, page, size);
@@ -96,9 +98,9 @@ class CommunityServiceTest {
 
             CommunityPost post = mock(CommunityPost.class);
 
-            when(postRepository.findBySearchConditions(isNull(), eq(keyword), any(PageRequest.class)))
-                .thenReturn(postEntityPage);
-            when(communityMapper.toDomain(postEntity)).thenReturn(post);
+            given(postRepository.findBySearchConditions(isNull(), eq(keyword), any(PageRequest.class)))
+                .willReturn(postEntityPage);
+            given(communityMapper.toDomain(postEntity)).willReturn(post);
 
             // when
             List<CommunityPost> result = communityService.getPosts(categoryName, keyword, page, size);
@@ -121,8 +123,8 @@ class CommunityServiceTest {
             CommunityPostEntity postEntity = new CommunityPostEntity();
             CommunityPost post = mock(CommunityPost.class);
 
-            when(postRepository.findByIdWithAuthorAndComments(postId)).thenReturn(Optional.of(postEntity));
-            when(communityMapper.toDomain(postEntity)).thenReturn(post);
+            given(postRepository.findByIdWithAuthorAndComments(postId)).willReturn(Optional.of(postEntity));
+            given(communityMapper.toDomain(postEntity)).willReturn(post);
 
             // when
             CommunityPost result = communityService.getPost(postId);
@@ -136,10 +138,11 @@ class CommunityServiceTest {
         void 존재하지_않는_게시글_조회시_예외발생() {
             // given
             Long postId = 999L;
-            when(postRepository.findByIdWithAuthorAndComments(postId)).thenReturn(Optional.empty());
+            given(postRepository.findByIdWithAuthorAndComments(postId)).willReturn(Optional.empty());
 
             // when & then
-            assertThrows(PostNotFoundException.class, () -> communityService.getPost(postId));
+            assertThatExceptionOfType(PostNotFoundException.class)
+                .isThrownBy(() -> communityService.getPost(postId));
         }
     }
 
@@ -166,11 +169,11 @@ class CommunityServiceTest {
             CommunityPostEntity postEntity = new CommunityPostEntity();
             CommunityPostEntity savedEntity = new CommunityPostEntity();
 
-            when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
-            when(communityMapper.toDomain(userEntity)).thenReturn(user);
-            when(communityMapper.toEntity(any(CommunityPost.class))).thenReturn(postEntity);
-            when(postRepository.save(postEntity)).thenReturn(savedEntity);
-            when(communityMapper.toDomain(savedEntity)).thenReturn(post);
+            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
+            given(communityMapper.toEntity(any(CommunityPost.class))).willReturn(postEntity);
+            given(postRepository.save(postEntity)).willReturn(savedEntity);
+            given(communityMapper.toDomain(savedEntity)).willReturn(post);
 
             // when
             CommunityPost result = communityService.createPost(request, userId);
@@ -186,10 +189,11 @@ class CommunityServiceTest {
             Long userId = 999L;
             CommunityDto.CommunityPostRequest request = new CommunityDto.CommunityPostRequest();
 
-            when(userRepository.findById(userId)).thenReturn(Optional.empty());
+            given(userRepository.findById(userId)).willReturn(Optional.empty());
 
             // when & then
-            assertThrows(IllegalArgumentException.class, () -> communityService.createPost(request, userId));
+            assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> communityService.createPost(request, userId));
         }
     }
 
@@ -214,19 +218,19 @@ class CommunityServiceTest {
             CommunityPostEntity postEntity = new CommunityPostEntity();
             CommunityPost post = mock(CommunityPost.class);
 
-            when(postRepository.findByIdWithAuthor(postId)).thenReturn(Optional.of(postEntity));
-            when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
-            when(communityMapper.toDomain(postEntity)).thenReturn(post);
-            when(communityMapper.toDomain(userEntity)).thenReturn(user);
-            when(post.isAuthor(user)).thenReturn(true);
+            given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
+            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
+            given(communityMapper.toDomain(postEntity)).willReturn(post);
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
+            given(post.isAuthor(user)).willReturn(true);
 
             // when
             CommunityPost result = communityService.updatePost(postId, request, userId);
 
             // then
             assertThat(result).isEqualTo(post);
-            verify(communityMapper).updateEntity(eq(postEntity), eq(post));
-            verify(post).update(eq(request.getTitle()), eq(request.getContent()), any(Category.class), eq(user));
+            then(communityMapper).should().updateEntity(eq(postEntity), eq(post));
+            then(post).should().update(eq(request.getTitle()), eq(request.getContent()), any(Category.class), eq(user));
         }
 
         @Test
@@ -243,16 +247,19 @@ class CommunityServiceTest {
 
             CommunityPostEntity postEntity = new CommunityPostEntity();
             CommunityPost post = mock(CommunityPost.class);
-            when(post.isAuthor(user)).thenReturn(false);
 
-            when(postRepository.findByIdWithAuthor(postId)).thenReturn(Optional.of(postEntity));
-            when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
-            when(communityMapper.toDomain(postEntity)).thenReturn(post);
-            when(communityMapper.toDomain(userEntity)).thenReturn(user);
+            given(post.isAuthor(user)).willReturn(false);
+            given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
+            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
+            given(communityMapper.toDomain(postEntity)).willReturn(post);
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
 
             // when & then
-            assertThrows(IllegalArgumentException.class, () -> communityService.updatePost(postId, request, userId));
-            verify(communityMapper, never()).updateEntity(any(CommunityPostEntity.class), any(CommunityPost.class));
+            assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> communityService.updatePost(postId, request, userId));
+
+            // then
+            then(communityMapper).should(never()).updateEntity(any(CommunityPostEntity.class), any(CommunityPost.class));
         }
 
         @Test
@@ -264,10 +271,11 @@ class CommunityServiceTest {
 
             CommunityDto.CommunityPostRequest request = new CommunityDto.CommunityPostRequest();
 
-            when(postRepository.findByIdWithAuthor(postId)).thenReturn(Optional.empty());
+            given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.empty());
 
             // when & then
-            assertThrows(PostNotFoundException.class, () -> communityService.updatePost(postId, request, userId));
+            assertThatExceptionOfType(PostNotFoundException.class)
+                .isThrownBy(() -> communityService.updatePost(postId, request, userId));
         }
 
         @Test
@@ -281,11 +289,12 @@ class CommunityServiceTest {
 
             CommunityPostEntity postEntity = new CommunityPostEntity();
 
-            when(postRepository.findByIdWithAuthor(postId)).thenReturn(Optional.of(postEntity));
-            when(userRepository.findById(userId)).thenReturn(Optional.empty());
+            given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
+            given(userRepository.findById(userId)).willReturn(Optional.empty());
 
             // when & then
-            assertThrows(IllegalArgumentException.class, () -> communityService.updatePost(postId, request, userId));
+            assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> communityService.updatePost(postId, request, userId));
         }
     }
 
@@ -305,18 +314,18 @@ class CommunityServiceTest {
 
             CommunityPostEntity postEntity = new CommunityPostEntity();
             CommunityPost post = mock(CommunityPost.class);
-            when(post.isAuthor(user)).thenReturn(true);
 
-            when(postRepository.findByIdWithAuthor(postId)).thenReturn(Optional.of(postEntity));
-            when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
-            when(communityMapper.toDomain(postEntity)).thenReturn(post);
-            when(communityMapper.toDomain(userEntity)).thenReturn(user);
+            given(post.isAuthor(user)).willReturn(true);
+            given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
+            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
+            given(communityMapper.toDomain(postEntity)).willReturn(post);
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
 
             // when
             communityService.deletePost(postId, userId);
 
             // then
-            verify(postRepository).delete(postEntity);
+            then(postRepository).should().delete(postEntity);
         }
 
         @Test
@@ -331,16 +340,19 @@ class CommunityServiceTest {
 
             CommunityPostEntity postEntity = new CommunityPostEntity();
             CommunityPost post = mock(CommunityPost.class);
-            when(post.isAuthor(user)).thenReturn(false);
 
-            when(postRepository.findByIdWithAuthor(postId)).thenReturn(Optional.of(postEntity));
-            when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
-            when(communityMapper.toDomain(postEntity)).thenReturn(post);
-            when(communityMapper.toDomain(userEntity)).thenReturn(user);
+            given(post.isAuthor(user)).willReturn(false);
+            given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
+            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
+            given(communityMapper.toDomain(postEntity)).willReturn(post);
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
 
             // when & then
-            assertThrows(IllegalArgumentException.class, () -> communityService.deletePost(postId, userId));
-            verify(postRepository, never()).delete(any());
+            assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> communityService.deletePost(postId, userId));
+
+            // then
+            then(postRepository).should(never()).delete(any());
         }
 
         @Test
@@ -350,11 +362,14 @@ class CommunityServiceTest {
             Long postId = 999L;
             Long userId = 1L;
 
-            when(postRepository.findByIdWithAuthor(postId)).thenReturn(Optional.empty());
+            given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.empty());
 
             // when & then
-            assertThrows(PostNotFoundException.class, () -> communityService.deletePost(postId, userId));
-            verify(postRepository, never()).delete(any());
+            assertThatExceptionOfType(PostNotFoundException.class)
+                .isThrownBy(() -> communityService.deletePost(postId, userId));
+
+            // then
+            then(postRepository).should(never()).delete(any());
         }
 
         @Test
@@ -366,12 +381,15 @@ class CommunityServiceTest {
 
             CommunityPostEntity postEntity = new CommunityPostEntity();
 
-            when(postRepository.findByIdWithAuthor(postId)).thenReturn(Optional.of(postEntity));
-            when(userRepository.findById(userId)).thenReturn(Optional.empty());
+            given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
+            given(userRepository.findById(userId)).willReturn(Optional.empty());
 
             // when & then
-            assertThrows(IllegalArgumentException.class, () -> communityService.deletePost(postId, userId));
-            verify(postRepository, never()).delete(any());
+            assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> communityService.deletePost(postId, userId));
+
+            // then
+            then(postRepository).should(never()).delete(any());
         }
     }
 
@@ -400,20 +418,20 @@ class CommunityServiceTest {
             CommunityCommentEntity commentEntity = new CommunityCommentEntity();
             CommunityCommentEntity savedEntity = new CommunityCommentEntity();
 
-            when(postRepository.findById(postId)).thenReturn(Optional.of(postEntity));
-            when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
-            when(communityMapper.toDomain(postEntity)).thenReturn(post);
-            when(communityMapper.toDomain(userEntity)).thenReturn(user);
-            when(communityMapper.toEntity(any(CommunityComment.class))).thenReturn(commentEntity);
-            when(commentRepository.save(commentEntity)).thenReturn(savedEntity);
-            when(communityMapper.toDomain(savedEntity)).thenReturn(comment);
+            given(postRepository.findById(postId)).willReturn(Optional.of(postEntity));
+            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
+            given(communityMapper.toDomain(postEntity)).willReturn(post);
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
+            given(communityMapper.toEntity(any(CommunityComment.class))).willReturn(commentEntity);
+            given(commentRepository.save(commentEntity)).willReturn(savedEntity);
+            given(communityMapper.toDomain(savedEntity)).willReturn(comment);
 
             // when
             CommunityComment result = communityService.addComment(postId, request, userId);
 
             // then
             assertThat(result).isEqualTo(comment);
-            verify(post).addComment(any(CommunityComment.class));
+            then(post).should().addComment(any(CommunityComment.class));
         }
 
         @Test
@@ -425,11 +443,14 @@ class CommunityServiceTest {
 
             CommunityDto.CommunityCommentRequest request = new CommunityDto.CommunityCommentRequest();
 
-            when(postRepository.findById(postId)).thenReturn(Optional.empty());
+            given(postRepository.findById(postId)).willReturn(Optional.empty());
 
             // when & then
-            assertThrows(PostNotFoundException.class, () -> communityService.addComment(postId, request, userId));
-            verify(commentRepository, never()).save(any());
+            assertThatExceptionOfType(PostNotFoundException.class)
+                .isThrownBy(() -> communityService.addComment(postId, request, userId));
+
+            // then
+            then(commentRepository).should(never()).save(any());
         }
 
         @Test
@@ -443,12 +464,15 @@ class CommunityServiceTest {
 
             CommunityPostEntity postEntity = new CommunityPostEntity();
 
-            when(postRepository.findById(postId)).thenReturn(Optional.of(postEntity));
-            when(userRepository.findById(userId)).thenReturn(Optional.empty());
+            given(postRepository.findById(postId)).willReturn(Optional.of(postEntity));
+            given(userRepository.findById(userId)).willReturn(Optional.empty());
 
             // when & then
-            assertThrows(IllegalArgumentException.class, () -> communityService.addComment(postId, request, userId));
-            verify(commentRepository, never()).save(any());
+            assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> communityService.addComment(postId, request, userId));
+
+            // then
+            then(commentRepository).should(never()).save(any());
         }
     }
 
@@ -472,19 +496,19 @@ class CommunityServiceTest {
             CommunityCommentEntity commentEntity = new CommunityCommentEntity();
             CommunityComment comment = mock(CommunityComment.class);
 
-            when(commentRepository.findByIdWithAuthor(commentId)).thenReturn(Optional.of(commentEntity));
-            when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
-            when(communityMapper.toDomain(commentEntity)).thenReturn(comment);
-            when(communityMapper.toDomain(userEntity)).thenReturn(user);
-            when(comment.isAuthor(user)).thenReturn(true);
+            given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.of(commentEntity));
+            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
+            given(communityMapper.toDomain(commentEntity)).willReturn(comment);
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
+            given(comment.isAuthor(user)).willReturn(true);
 
             // when
             CommunityComment result = communityService.updateComment(commentId, request, userId);
 
             // then
             assertThat(result).isEqualTo(comment);
-            verify(communityMapper).updateEntity(eq(commentEntity), eq(comment));
-            verify(comment).updateContent(eq(request.getContent()));
+            then(communityMapper).should().updateEntity(eq(commentEntity), eq(comment));
+            then(comment).should().updateContent(eq(request.getContent()));
         }
 
         @Test
@@ -501,16 +525,19 @@ class CommunityServiceTest {
 
             CommunityCommentEntity commentEntity = new CommunityCommentEntity();
             CommunityComment comment = mock(CommunityComment.class);
-            when(comment.isAuthor(user)).thenReturn(false);
 
-            when(commentRepository.findByIdWithAuthor(commentId)).thenReturn(Optional.of(commentEntity));
-            when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
-            when(communityMapper.toDomain(commentEntity)).thenReturn(comment);
-            when(communityMapper.toDomain(userEntity)).thenReturn(user);
+            given(comment.isAuthor(user)).willReturn(false);
+            given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.of(commentEntity));
+            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
+            given(communityMapper.toDomain(commentEntity)).willReturn(comment);
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
 
             // when & then
-            assertThrows(IllegalArgumentException.class, () -> communityService.updateComment(commentId, request, userId));
-            verify(communityMapper, never()).updateEntity(any(CommunityCommentEntity.class), any(CommunityComment.class));
+            assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> communityService.updateComment(commentId, request, userId));
+
+            // then
+            then(communityMapper).should(never()).updateEntity(any(CommunityCommentEntity.class), any(CommunityComment.class));
         }
 
         @Test
@@ -522,11 +549,14 @@ class CommunityServiceTest {
 
             CommunityDto.CommunityCommentRequest request = new CommunityDto.CommunityCommentRequest();
 
-            when(commentRepository.findByIdWithAuthor(commentId)).thenReturn(Optional.empty());
+            given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.empty());
 
             // when & then
-            assertThrows(CommentNotFoundException.class, () -> communityService.updateComment(commentId, request, userId));
-            verify(communityMapper, never()).updateEntity(any(CommunityCommentEntity.class), any(CommunityComment.class));
+            assertThatExceptionOfType(CommentNotFoundException.class)
+                .isThrownBy(() -> communityService.updateComment(commentId, request, userId));
+
+            // then
+            then(communityMapper).should(never()).updateEntity(any(CommunityCommentEntity.class), any(CommunityComment.class));
         }
 
         @Test
@@ -540,12 +570,15 @@ class CommunityServiceTest {
 
             CommunityCommentEntity commentEntity = new CommunityCommentEntity();
 
-            when(commentRepository.findByIdWithAuthor(commentId)).thenReturn(Optional.of(commentEntity));
-            when(userRepository.findById(userId)).thenReturn(Optional.empty());
+            given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.of(commentEntity));
+            given(userRepository.findById(userId)).willReturn(Optional.empty());
 
             // when & then
-            assertThrows(IllegalArgumentException.class, () -> communityService.updateComment(commentId, request, userId));
-            verify(communityMapper, never()).updateEntity(any(CommunityCommentEntity.class), any(CommunityComment.class));
+            assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> communityService.updateComment(commentId, request, userId));
+
+            // then
+            then(communityMapper).should(never()).updateEntity(any(CommunityCommentEntity.class), any(CommunityComment.class));
         }
     }
 
@@ -565,18 +598,18 @@ class CommunityServiceTest {
 
             CommunityCommentEntity commentEntity = new CommunityCommentEntity();
             CommunityComment comment = mock(CommunityComment.class);
-            when(comment.isAuthor(user)).thenReturn(true);
 
-            when(commentRepository.findByIdWithAuthor(commentId)).thenReturn(Optional.of(commentEntity));
-            when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
-            when(communityMapper.toDomain(commentEntity)).thenReturn(comment);
-            when(communityMapper.toDomain(userEntity)).thenReturn(user);
+            given(comment.isAuthor(user)).willReturn(true);
+            given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.of(commentEntity));
+            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
+            given(communityMapper.toDomain(commentEntity)).willReturn(comment);
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
 
             // when
             communityService.deleteComment(commentId, userId);
 
             // then
-            verify(commentRepository).delete(commentEntity);
+            then(commentRepository).should().delete(commentEntity);
         }
 
         @Test
@@ -591,16 +624,19 @@ class CommunityServiceTest {
 
             CommunityCommentEntity commentEntity = new CommunityCommentEntity();
             CommunityComment comment = mock(CommunityComment.class);
-            when(comment.isAuthor(user)).thenReturn(false);
 
-            when(commentRepository.findByIdWithAuthor(commentId)).thenReturn(Optional.of(commentEntity));
-            when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
-            when(communityMapper.toDomain(commentEntity)).thenReturn(comment);
-            when(communityMapper.toDomain(userEntity)).thenReturn(user);
+            given(comment.isAuthor(user)).willReturn(false);
+            given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.of(commentEntity));
+            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
+            given(communityMapper.toDomain(commentEntity)).willReturn(comment);
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
 
             // when & then
-            assertThrows(IllegalArgumentException.class, () -> communityService.deleteComment(commentId, userId));
-            verify(commentRepository, never()).delete(any());
+            assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> communityService.deleteComment(commentId, userId));
+
+            // then
+            then(commentRepository).should(never()).delete(any());
         }
 
         @Test
@@ -610,11 +646,14 @@ class CommunityServiceTest {
             Long commentId = 999L;
             Long userId = 1L;
 
-            when(commentRepository.findByIdWithAuthor(commentId)).thenReturn(Optional.empty());
+            given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.empty());
 
             // when & then
-            assertThrows(CommentNotFoundException.class, () -> communityService.deleteComment(commentId, userId));
-            verify(commentRepository, never()).delete(any());
+            assertThatExceptionOfType(CommentNotFoundException.class)
+                .isThrownBy(() -> communityService.deleteComment(commentId, userId));
+
+            // then
+            then(commentRepository).should(never()).delete(any());
         }
 
         @Test
@@ -626,12 +665,15 @@ class CommunityServiceTest {
 
             CommunityCommentEntity commentEntity = new CommunityCommentEntity();
 
-            when(commentRepository.findByIdWithAuthor(commentId)).thenReturn(Optional.of(commentEntity));
-            when(userRepository.findById(userId)).thenReturn(Optional.empty());
+            given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.of(commentEntity));
+            given(userRepository.findById(userId)).willReturn(Optional.empty());
 
             // when & then
-            assertThrows(IllegalArgumentException.class, () -> communityService.deleteComment(commentId, userId));
-            verify(commentRepository, never()).delete(any());
+            assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> communityService.deleteComment(commentId, userId));
+
+            // then
+            then(commentRepository).should(never()).delete(any());
         }
     }
 }
