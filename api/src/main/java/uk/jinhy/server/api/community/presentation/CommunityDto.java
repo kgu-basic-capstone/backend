@@ -1,10 +1,7 @@
 package uk.jinhy.server.api.community.presentation;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,6 +9,7 @@ import java.util.List;
 public class CommunityDto {
 
     @Getter
+    @Setter
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
@@ -22,6 +20,7 @@ public class CommunityDto {
     }
 
     @Getter
+    @Setter
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
@@ -47,6 +46,7 @@ public class CommunityDto {
     }
 
     @Getter
+    @Setter
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
@@ -58,6 +58,7 @@ public class CommunityDto {
     }
 
     @Getter
+    @Setter
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
@@ -66,6 +67,7 @@ public class CommunityDto {
     }
 
     @Getter
+    @Setter
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
@@ -77,6 +79,7 @@ public class CommunityDto {
         private LocalDateTime createdAt;
 
         @Getter
+        @Setter
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor

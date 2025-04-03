@@ -10,7 +10,7 @@ if [ "$STAGED_FILES" = "" ]; then
 fi
 
 echo "Running checkstyle..."
-./gradlew checkstyle --daemon
+./gradlew checkstyleMain --daemon
 
 if [ $? -ne 0 ]; then
   echo "Checkstyle failed. Please fix the issues before committing."

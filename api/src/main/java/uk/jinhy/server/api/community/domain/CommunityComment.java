@@ -1,11 +1,17 @@
-package uk.jinhy.server.api.domain;
+package uk.jinhy.server.api.community.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import uk.jinhy.server.api.domain.User;
 
 import java.time.LocalDateTime;
 
 @Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class CommunityComment {
     private Long id;
     private CommunityPost post;
@@ -13,14 +19,9 @@ public class CommunityComment {
     private String content;
     private LocalDateTime createdAt;
 
-    @Builder
-    private CommunityComment(CommunityPost post, User author, String content) {
-        this.post = post;
-        this.author = author;
-        this.content = content;
-        this.createdAt = LocalDateTime.now();
+    public boolean isAuthor(User user) {
+        return this.author.getId().equals(user.getId());
     }
-
     public void updateContent(String newContent) {
         this.content = newContent;
     }

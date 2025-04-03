@@ -2,6 +2,9 @@ package uk.jinhy.server.api.domain;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import uk.jinhy.server.api.community.domain.Category;
+import uk.jinhy.server.api.community.domain.CommunityComment;
+import uk.jinhy.server.api.community.domain.CommunityPost;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
