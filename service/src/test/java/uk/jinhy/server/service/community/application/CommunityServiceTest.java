@@ -4,6 +4,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -22,15 +24,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.*;
-
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CommunityServiceTest {
@@ -45,7 +42,7 @@ class CommunityServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private CommunityMapper communityMapper;
+    private CommunityMapper communityMapper; // 엔티티 <-> 도메인 변환
 
     @InjectMocks
     private CommunityServiceImpl communityService;
@@ -65,16 +62,17 @@ class CommunityServiceTest {
 
             Category category = Category.NOTICE;
 
-            CommunityPostEntity postEntity1 = new CommunityPostEntity();
-            CommunityPostEntity postEntity2 = new CommunityPostEntity();
-            List<CommunityPostEntity> postEntities = Arrays.asList(postEntity1, postEntity2);
-            Page<CommunityPostEntity> postEntityPage = new PageImpl<>(postEntities);
+            CommunityPostEntity postEntity1 = mock(CommunityPostEntity.class);
+            CommunityPostEntity postEntity2 = mock(CommunityPostEntity.class);
+            List<CommunityPostEntity> entityList = Arrays.asList(postEntity1, postEntity2);
+            Page<CommunityPostEntity> entityPage = new PageImpl<>(entityList);
 
             CommunityPost post1 = mock(CommunityPost.class);
             CommunityPost post2 = mock(CommunityPost.class);
 
             given(postRepository.findBySearchConditions(eq(category), eq(keyword), any(PageRequest.class)))
-                .willReturn(postEntityPage);
+                .willReturn(entityPage);
+
             given(communityMapper.toDomain(postEntity1)).willReturn(post1);
             given(communityMapper.toDomain(postEntity2)).willReturn(post2);
 
@@ -95,14 +93,13 @@ class CommunityServiceTest {
             int page = 0;
             int size = 10;
 
-            CommunityPostEntity postEntity = new CommunityPostEntity();
-            List<CommunityPostEntity> postEntities = Arrays.asList(postEntity);
-            Page<CommunityPostEntity> postEntityPage = new PageImpl<>(postEntities);
+            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
+            Page<CommunityPostEntity> entityPage = new PageImpl<>(List.of(postEntity));
 
             CommunityPost post = mock(CommunityPost.class);
 
             given(postRepository.findBySearchConditions(isNull(), eq(keyword), any(PageRequest.class)))
-                .willReturn(postEntityPage);
+                .willReturn(entityPage);
             given(communityMapper.toDomain(postEntity)).willReturn(post);
 
             // when
@@ -123,7 +120,8 @@ class CommunityServiceTest {
         void ID로_게시글_조회() {
             // given
             Long postId = 1L;
-            CommunityPostEntity postEntity = new CommunityPostEntity();
+
+            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
             CommunityPost post = mock(CommunityPost.class);
 
             given(postRepository.findByIdWithAuthorAndComments(postId)).willReturn(Optional.of(postEntity));
@@ -164,25 +162,28 @@ class CommunityServiceTest {
             request.setContent("Test Content");
             request.setCategory("NOTICE");
 
-            UserEntity userEntity = new UserEntity();
+            UserEntity userEntity = mock(UserEntity.class);
             User user = mock(User.class);
 
             CommunityPost post = mock(CommunityPost.class);
-
-            CommunityPostEntity postEntity = new CommunityPostEntity();
-            CommunityPostEntity savedEntity = new CommunityPostEntity();
+            CommunityPostEntity savedEntity = mock(CommunityPostEntity.class);
+            CommunityPost returnedPost = mock(CommunityPost.class);
 
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
+            // 엔티티 -> 도메인
             given(communityMapper.toDomain(userEntity)).willReturn(user);
-            given(communityMapper.toEntity(any(CommunityPost.class))).willReturn(postEntity);
-            given(postRepository.save(postEntity)).willReturn(savedEntity);
-            given(communityMapper.toDomain(savedEntity)).willReturn(post);
+
+            // Service 내부에서 post domain을 만들어 -> entity로 변환 -> repo.save(entity)
+            // repo.save(...) 후, 다시 entity -> domain
+            given(communityMapper.toEntity(any(CommunityPost.class))).willReturn(mock(CommunityPostEntity.class));
+            given(postRepository.save(any(CommunityPostEntity.class))).willReturn(savedEntity);
+            given(communityMapper.toDomain(savedEntity)).willReturn(returnedPost);
 
             // when
             CommunityPost result = communityService.createPost(request, userId);
 
             // then
-            assertThat(result).isEqualTo(post);
+            assertThat(result).isEqualTo(returnedPost);
         }
 
         @Test
@@ -215,16 +216,20 @@ class CommunityServiceTest {
             request.setContent("Updated Content");
             request.setCategory("NOTICE");
 
-            UserEntity userEntity = new UserEntity();
+            UserEntity userEntity = mock(UserEntity.class);
             User user = mock(User.class);
 
-            CommunityPostEntity postEntity = new CommunityPostEntity();
+            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
             CommunityPost post = mock(CommunityPost.class);
 
             given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
+
+            // 엔티티 -> 도메인
             given(communityMapper.toDomain(postEntity)).willReturn(post);
             given(communityMapper.toDomain(userEntity)).willReturn(user);
+
+            // 작성자 체크
             given(post.isAuthor(user)).willReturn(true);
 
             // when
@@ -244,24 +249,23 @@ class CommunityServiceTest {
             Long userId = 2L;
 
             UpdatePostDto request = new UpdatePostDto();
-
-            UserEntity userEntity = new UserEntity();
+            UserEntity userEntity = mock(UserEntity.class);
             User user = mock(User.class);
 
-            CommunityPostEntity postEntity = new CommunityPostEntity();
+            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
             CommunityPost post = mock(CommunityPost.class);
 
-            given(post.isAuthor(user)).willReturn(false);
             given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
             given(communityMapper.toDomain(postEntity)).willReturn(post);
             given(communityMapper.toDomain(userEntity)).willReturn(user);
 
+            given(post.isAuthor(user)).willReturn(false);
+
             // when & then
             assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> communityService.updatePost(postId, request, userId));
 
-            // then
             then(communityMapper).should(never()).updateEntity(any(CommunityPostEntity.class), any(CommunityPost.class));
         }
 
@@ -289,8 +293,7 @@ class CommunityServiceTest {
             Long userId = 999L;
 
             UpdatePostDto request = new UpdatePostDto();
-
-            CommunityPostEntity postEntity = new CommunityPostEntity();
+            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
 
             given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
             given(userRepository.findById(userId)).willReturn(Optional.empty());
@@ -312,17 +315,17 @@ class CommunityServiceTest {
             Long postId = 1L;
             Long userId = 1L;
 
-            UserEntity userEntity = new UserEntity();
+            UserEntity userEntity = mock(UserEntity.class);
             User user = mock(User.class);
 
-            CommunityPostEntity postEntity = new CommunityPostEntity();
+            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
             CommunityPost post = mock(CommunityPost.class);
 
-            given(post.isAuthor(user)).willReturn(true);
             given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
             given(communityMapper.toDomain(postEntity)).willReturn(post);
             given(communityMapper.toDomain(userEntity)).willReturn(user);
+            given(post.isAuthor(user)).willReturn(true);
 
             // when
             communityService.deletePost(postId, userId);
@@ -338,23 +341,22 @@ class CommunityServiceTest {
             Long postId = 1L;
             Long userId = 2L;
 
-            UserEntity userEntity = new UserEntity();
+            UserEntity userEntity = mock(UserEntity.class);
             User user = mock(User.class);
 
-            CommunityPostEntity postEntity = new CommunityPostEntity();
+            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
             CommunityPost post = mock(CommunityPost.class);
 
-            given(post.isAuthor(user)).willReturn(false);
             given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
             given(communityMapper.toDomain(postEntity)).willReturn(post);
             given(communityMapper.toDomain(userEntity)).willReturn(user);
+            given(post.isAuthor(user)).willReturn(false);
 
             // when & then
             assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> communityService.deletePost(postId, userId));
 
-            // then
             then(postRepository).should(never()).delete(any());
         }
 
@@ -371,7 +373,6 @@ class CommunityServiceTest {
             assertThatExceptionOfType(PostNotFoundException.class)
                 .isThrownBy(() -> communityService.deletePost(postId, userId));
 
-            // then
             then(postRepository).should(never()).delete(any());
         }
 
@@ -382,7 +383,7 @@ class CommunityServiceTest {
             Long postId = 1L;
             Long userId = 999L;
 
-            CommunityPostEntity postEntity = new CommunityPostEntity();
+            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
 
             given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
             given(userRepository.findById(userId)).willReturn(Optional.empty());
@@ -391,7 +392,6 @@ class CommunityServiceTest {
             assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> communityService.deletePost(postId, userId));
 
-            // then
             then(postRepository).should(never()).delete(any());
         }
     }
@@ -410,30 +410,32 @@ class CommunityServiceTest {
             AddCommentDto request = new AddCommentDto();
             request.setContent("Test Comment");
 
-            UserEntity userEntity = new UserEntity();
+            UserEntity userEntity = mock(UserEntity.class);
             User user = mock(User.class);
 
-            CommunityPostEntity postEntity = new CommunityPostEntity();
+            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
             CommunityPost post = mock(CommunityPost.class);
 
             CommunityComment comment = mock(CommunityComment.class);
-
-            CommunityCommentEntity commentEntity = new CommunityCommentEntity();
-            CommunityCommentEntity savedEntity = new CommunityCommentEntity();
+            CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
+            CommunityCommentEntity savedEntity = mock(CommunityCommentEntity.class);
+            CommunityComment returnedComment = mock(CommunityComment.class);
 
             given(postRepository.findById(postId)).willReturn(Optional.of(postEntity));
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
+
             given(communityMapper.toDomain(postEntity)).willReturn(post);
             given(communityMapper.toDomain(userEntity)).willReturn(user);
+
             given(communityMapper.toEntity(any(CommunityComment.class))).willReturn(commentEntity);
             given(commentRepository.save(commentEntity)).willReturn(savedEntity);
-            given(communityMapper.toDomain(savedEntity)).willReturn(comment);
+            given(communityMapper.toDomain(savedEntity)).willReturn(returnedComment);
 
             // when
             CommunityComment result = communityService.addComment(postId, request, userId);
 
             // then
-            assertThat(result).isEqualTo(comment);
+            assertThat(result).isEqualTo(returnedComment);
             then(post).should().addComment(any(CommunityComment.class));
         }
 
@@ -452,7 +454,6 @@ class CommunityServiceTest {
             assertThatExceptionOfType(PostNotFoundException.class)
                 .isThrownBy(() -> communityService.addComment(postId, request, userId));
 
-            // then
             then(commentRepository).should(never()).save(any());
         }
 
@@ -464,8 +465,7 @@ class CommunityServiceTest {
             Long userId = 999L;
 
             AddCommentDto request = new AddCommentDto();
-
-            CommunityPostEntity postEntity = new CommunityPostEntity();
+            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
 
             given(postRepository.findById(postId)).willReturn(Optional.of(postEntity));
             given(userRepository.findById(userId)).willReturn(Optional.empty());
@@ -474,7 +474,6 @@ class CommunityServiceTest {
             assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> communityService.addComment(postId, request, userId));
 
-            // then
             then(commentRepository).should(never()).save(any());
         }
     }
@@ -493,16 +492,18 @@ class CommunityServiceTest {
             UpdateCommentDto request = new UpdateCommentDto();
             request.setContent("Updated Comment");
 
-            UserEntity userEntity = new UserEntity();
+            UserEntity userEntity = mock(UserEntity.class);
             User user = mock(User.class);
 
-            CommunityCommentEntity commentEntity = new CommunityCommentEntity();
+            CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
             CommunityComment comment = mock(CommunityComment.class);
 
             given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.of(commentEntity));
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
+
             given(communityMapper.toDomain(commentEntity)).willReturn(comment);
             given(communityMapper.toDomain(userEntity)).willReturn(user);
+
             given(comment.isAuthor(user)).willReturn(true);
 
             // when
@@ -523,23 +524,24 @@ class CommunityServiceTest {
 
             UpdateCommentDto request = new UpdateCommentDto();
 
-            UserEntity userEntity = new UserEntity();
+            UserEntity userEntity = mock(UserEntity.class);
             User user = mock(User.class);
 
-            CommunityCommentEntity commentEntity = new CommunityCommentEntity();
+            CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
             CommunityComment comment = mock(CommunityComment.class);
 
-            given(comment.isAuthor(user)).willReturn(false);
             given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.of(commentEntity));
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
+
             given(communityMapper.toDomain(commentEntity)).willReturn(comment);
             given(communityMapper.toDomain(userEntity)).willReturn(user);
+
+            given(comment.isAuthor(user)).willReturn(false);
 
             // when & then
             assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> communityService.updateComment(commentId, request, userId));
 
-            // then
             then(communityMapper).should(never()).updateEntity(any(CommunityCommentEntity.class), any(CommunityComment.class));
         }
 
@@ -557,9 +559,6 @@ class CommunityServiceTest {
             // when & then
             assertThatExceptionOfType(CommentNotFoundException.class)
                 .isThrownBy(() -> communityService.updateComment(commentId, request, userId));
-
-            // then
-            then(communityMapper).should(never()).updateEntity(any(CommunityCommentEntity.class), any(CommunityComment.class));
         }
 
         @Test
@@ -570,8 +569,7 @@ class CommunityServiceTest {
             Long userId = 999L;
 
             UpdateCommentDto request = new UpdateCommentDto();
-
-            CommunityCommentEntity commentEntity = new CommunityCommentEntity();
+            CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
 
             given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.of(commentEntity));
             given(userRepository.findById(userId)).willReturn(Optional.empty());
@@ -580,7 +578,6 @@ class CommunityServiceTest {
             assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> communityService.updateComment(commentId, request, userId));
 
-            // then
             then(communityMapper).should(never()).updateEntity(any(CommunityCommentEntity.class), any(CommunityComment.class));
         }
     }
@@ -596,17 +593,19 @@ class CommunityServiceTest {
             Long commentId = 1L;
             Long userId = 1L;
 
-            UserEntity userEntity = new UserEntity();
+            UserEntity userEntity = mock(UserEntity.class);
             User user = mock(User.class);
 
-            CommunityCommentEntity commentEntity = new CommunityCommentEntity();
+            CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
             CommunityComment comment = mock(CommunityComment.class);
 
-            given(comment.isAuthor(user)).willReturn(true);
             given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.of(commentEntity));
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
+
             given(communityMapper.toDomain(commentEntity)).willReturn(comment);
             given(communityMapper.toDomain(userEntity)).willReturn(user);
+
+            given(comment.isAuthor(user)).willReturn(true);
 
             // when
             communityService.deleteComment(commentId, userId);
@@ -622,23 +621,24 @@ class CommunityServiceTest {
             Long commentId = 1L;
             Long userId = 2L;
 
-            UserEntity userEntity = new UserEntity();
+            UserEntity userEntity = mock(UserEntity.class);
             User user = mock(User.class);
 
-            CommunityCommentEntity commentEntity = new CommunityCommentEntity();
+            CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
             CommunityComment comment = mock(CommunityComment.class);
 
-            given(comment.isAuthor(user)).willReturn(false);
             given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.of(commentEntity));
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
+
             given(communityMapper.toDomain(commentEntity)).willReturn(comment);
             given(communityMapper.toDomain(userEntity)).willReturn(user);
+
+            given(comment.isAuthor(user)).willReturn(false);
 
             // when & then
             assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> communityService.deleteComment(commentId, userId));
 
-            // then
             then(commentRepository).should(never()).delete(any());
         }
 
@@ -655,7 +655,6 @@ class CommunityServiceTest {
             assertThatExceptionOfType(CommentNotFoundException.class)
                 .isThrownBy(() -> communityService.deleteComment(commentId, userId));
 
-            // then
             then(commentRepository).should(never()).delete(any());
         }
 
@@ -666,7 +665,7 @@ class CommunityServiceTest {
             Long commentId = 1L;
             Long userId = 999L;
 
-            CommunityCommentEntity commentEntity = new CommunityCommentEntity();
+            CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
 
             given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.of(commentEntity));
             given(userRepository.findById(userId)).willReturn(Optional.empty());
@@ -675,7 +674,6 @@ class CommunityServiceTest {
             assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> communityService.deleteComment(commentId, userId));
 
-            // then
             then(commentRepository).should(never()).delete(any());
         }
     }
