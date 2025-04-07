@@ -1,16 +1,16 @@
-package uk.jinhy.server.service.domain;
+package uk.jinhy.server.service.community.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import uk.jinhy.server.service.domain.UserEntity;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "community_comments")
 public class CommunityCommentEntity {
     @Id
@@ -30,16 +30,4 @@ public class CommunityCommentEntity {
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
-
-    @Builder
-    public CommunityCommentEntity(CommunityPostEntity post, UserEntity author, String content) {
-        this.post = post;
-        this.author = author;
-        this.content = content;
-        this.createdAt = LocalDateTime.now();
-    }
-
-    public void updateContent(String newContent) {
-        this.content = newContent;
-    }
 }

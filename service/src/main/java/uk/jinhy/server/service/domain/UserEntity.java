@@ -1,16 +1,17 @@
 package uk.jinhy.server.service.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "users", uniqueConstraints = {
     @UniqueConstraint(columnNames = "username"),
     @UniqueConstraint(columnNames = "email")
@@ -28,12 +29,6 @@ public class UserEntity {
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PetEntity> pets = new ArrayList<>();
-
-    @Builder
-    public UserEntity(String username, String email) {
-        this.username = username;
-        this.email = email;
-    }
 
     public void updateUsername(String username) {
         this.username = username;
