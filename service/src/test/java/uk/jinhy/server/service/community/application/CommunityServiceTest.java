@@ -8,8 +8,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import uk.jinhy.server.api.community.application.dto.AddCommentDto;
+import uk.jinhy.server.api.community.application.dto.CreatePostDto;
+import uk.jinhy.server.api.community.application.dto.UpdateCommentDto;
+import uk.jinhy.server.api.community.application.dto.UpdatePostDto;
 import uk.jinhy.server.api.community.domain.*;
-import uk.jinhy.server.api.community.presentation.CommunityDto;
 import uk.jinhy.server.api.domain.User;
 import uk.jinhy.server.service.community.domain.*;
 import uk.jinhy.server.service.domain.UserEntity;
@@ -156,7 +159,7 @@ class CommunityServiceTest {
             // given
             Long userId = 1L;
 
-            CommunityDto.CommunityPostRequest request = new CommunityDto.CommunityPostRequest();
+            CreatePostDto request = new CreatePostDto();
             request.setTitle("Test Title");
             request.setContent("Test Content");
             request.setCategory("NOTICE");
@@ -187,7 +190,7 @@ class CommunityServiceTest {
         void 존재하지_않는_사용자_게시글_작성시_예외발생() {
             // given
             Long userId = 999L;
-            CommunityDto.CommunityPostRequest request = new CommunityDto.CommunityPostRequest();
+            CreatePostDto request = new CreatePostDto();
 
             given(userRepository.findById(userId)).willReturn(Optional.empty());
 
@@ -207,7 +210,7 @@ class CommunityServiceTest {
             Long postId = 1L;
             Long userId = 1L;
 
-            CommunityDto.CommunityPostRequest request = new CommunityDto.CommunityPostRequest();
+            UpdatePostDto request = new UpdatePostDto();
             request.setTitle("Updated Title");
             request.setContent("Updated Content");
             request.setCategory("NOTICE");
@@ -240,7 +243,7 @@ class CommunityServiceTest {
             Long postId = 1L;
             Long userId = 2L;
 
-            CommunityDto.CommunityPostRequest request = new CommunityDto.CommunityPostRequest();
+            UpdatePostDto request = new UpdatePostDto();
 
             UserEntity userEntity = new UserEntity();
             User user = mock(User.class);
@@ -269,7 +272,7 @@ class CommunityServiceTest {
             Long postId = 999L;
             Long userId = 1L;
 
-            CommunityDto.CommunityPostRequest request = new CommunityDto.CommunityPostRequest();
+            UpdatePostDto request = new UpdatePostDto();
 
             given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.empty());
 
@@ -285,7 +288,7 @@ class CommunityServiceTest {
             Long postId = 1L;
             Long userId = 999L;
 
-            CommunityDto.CommunityPostRequest request = new CommunityDto.CommunityPostRequest();
+            UpdatePostDto request = new UpdatePostDto();
 
             CommunityPostEntity postEntity = new CommunityPostEntity();
 
@@ -404,7 +407,7 @@ class CommunityServiceTest {
             Long postId = 1L;
             Long userId = 1L;
 
-            CommunityDto.CommunityCommentRequest request = new CommunityDto.CommunityCommentRequest();
+            AddCommentDto request = new AddCommentDto();
             request.setContent("Test Comment");
 
             UserEntity userEntity = new UserEntity();
@@ -441,7 +444,7 @@ class CommunityServiceTest {
             Long postId = 999L;
             Long userId = 1L;
 
-            CommunityDto.CommunityCommentRequest request = new CommunityDto.CommunityCommentRequest();
+            AddCommentDto request = new AddCommentDto();
 
             given(postRepository.findById(postId)).willReturn(Optional.empty());
 
@@ -460,7 +463,7 @@ class CommunityServiceTest {
             Long postId = 1L;
             Long userId = 999L;
 
-            CommunityDto.CommunityCommentRequest request = new CommunityDto.CommunityCommentRequest();
+            AddCommentDto request = new AddCommentDto();
 
             CommunityPostEntity postEntity = new CommunityPostEntity();
 
@@ -487,7 +490,7 @@ class CommunityServiceTest {
             Long commentId = 1L;
             Long userId = 1L;
 
-            CommunityDto.CommunityCommentRequest request = new CommunityDto.CommunityCommentRequest();
+            UpdateCommentDto request = new UpdateCommentDto();
             request.setContent("Updated Comment");
 
             UserEntity userEntity = new UserEntity();
@@ -518,7 +521,7 @@ class CommunityServiceTest {
             Long commentId = 1L;
             Long userId = 2L;
 
-            CommunityDto.CommunityCommentRequest request = new CommunityDto.CommunityCommentRequest();
+            UpdateCommentDto request = new UpdateCommentDto();
 
             UserEntity userEntity = new UserEntity();
             User user = mock(User.class);
@@ -547,7 +550,7 @@ class CommunityServiceTest {
             Long commentId = 999L;
             Long userId = 1L;
 
-            CommunityDto.CommunityCommentRequest request = new CommunityDto.CommunityCommentRequest();
+            UpdateCommentDto request = new UpdateCommentDto();
 
             given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.empty());
 
@@ -566,7 +569,7 @@ class CommunityServiceTest {
             Long commentId = 1L;
             Long userId = 999L;
 
-            CommunityDto.CommunityCommentRequest request = new CommunityDto.CommunityCommentRequest();
+            UpdateCommentDto request = new UpdateCommentDto();
 
             CommunityCommentEntity commentEntity = new CommunityCommentEntity();
 

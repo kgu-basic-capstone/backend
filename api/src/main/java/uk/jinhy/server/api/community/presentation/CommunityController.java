@@ -6,11 +6,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import uk.jinhy.server.api.community.presentation.CommunityDto.CommunityCommentRequest;
-import uk.jinhy.server.api.community.presentation.CommunityDto.CommunityCommentResponse;
-import uk.jinhy.server.api.community.presentation.CommunityDto.CommunityPostRequest;
-import uk.jinhy.server.api.community.presentation.CommunityDto.CommunityPostDetailResponse;
-import uk.jinhy.server.api.community.presentation.CommunityDto.CommunityPostListResponse;
+import uk.jinhy.server.api.community.presentation.dto.request.CommunityCommentRequestDto;
+import uk.jinhy.server.api.community.presentation.dto.request.CommunityPostRequestDto;
+import uk.jinhy.server.api.community.presentation.dto.response.CommunityCommentResponseDto;
+import uk.jinhy.server.api.community.presentation.dto.response.CommunityPostDetailResponseDto;
+import uk.jinhy.server.api.community.presentation.dto.response.CommunityPostListResponseDto;
 
 @Tag(name = "Community", description = "커뮤니티 API")
 public interface CommunityController {
@@ -23,7 +23,7 @@ public interface CommunityController {
         }
     )
     @GetMapping("/api/community/posts")
-    ResponseEntity<CommunityPostListResponse> getPosts(
+    ResponseEntity<CommunityPostListResponseDto> getPosts(
         @Parameter(description = "카테고리 (HOSPITAL_REVIEW, SYMPTOMS, QUESTIONS, OTHER)")
         @RequestParam(required = false) String category,
         @Parameter(description = "검색 키워드") @RequestParam(required = false) String keyword,
@@ -40,7 +40,7 @@ public interface CommunityController {
         }
     )
     @GetMapping("/api/community/posts/{postId}")
-    ResponseEntity<CommunityPostDetailResponse> getPost(
+    ResponseEntity<CommunityPostDetailResponseDto> getPost(
         @Parameter(description = "게시글 ID") @PathVariable Long postId
     );
 
@@ -54,8 +54,8 @@ public interface CommunityController {
         }
     )
     @PostMapping("/api/community/posts")
-    ResponseEntity<CommunityPostDetailResponse> createPost(
-        @RequestBody CommunityPostRequest request
+    ResponseEntity<CommunityPostDetailResponseDto> createPost(
+        @RequestBody CommunityPostRequestDto request
     );
 
     @Operation(
@@ -70,9 +70,9 @@ public interface CommunityController {
         }
     )
     @PutMapping("/api/community/posts/{postId}")
-    ResponseEntity<CommunityPostDetailResponse> updatePost(
+    ResponseEntity<CommunityPostDetailResponseDto> updatePost(
         @Parameter(description = "게시글 ID") @PathVariable Long postId,
-        @RequestBody CommunityPostRequest request
+        @RequestBody CommunityPostRequestDto request
     );
 
     @Operation(
@@ -101,9 +101,9 @@ public interface CommunityController {
         }
     )
     @PostMapping("/api/community/posts/{postId}/comments")
-    ResponseEntity<CommunityCommentResponse> addComment(
+    ResponseEntity<CommunityCommentResponseDto> addComment(
         @Parameter(description = "게시글 ID") @PathVariable Long postId,
-        @RequestBody CommunityCommentRequest request
+        @RequestBody CommunityCommentRequestDto request
     );
 
     @Operation(
@@ -118,9 +118,9 @@ public interface CommunityController {
         }
     )
     @PutMapping("/api/community/comments/{commentId}")
-    ResponseEntity<CommunityCommentResponse> updateComment(
+    ResponseEntity<CommunityCommentResponseDto> updateComment(
         @Parameter(description = "댓글 ID") @PathVariable Long commentId,
-        @RequestBody CommunityCommentRequest request
+        @RequestBody CommunityCommentRequestDto request
     );
 
     @Operation(

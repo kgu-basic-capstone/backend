@@ -6,13 +6,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.jinhy.server.api.community.application.CommunityService;
+import uk.jinhy.server.api.community.application.dto.AddCommentDto;
+import uk.jinhy.server.api.community.application.dto.CreatePostDto;
+import uk.jinhy.server.api.community.application.dto.UpdateCommentDto;
+import uk.jinhy.server.api.community.application.dto.UpdatePostDto;
 import uk.jinhy.server.api.community.domain.*;
+import uk.jinhy.server.api.community.presentation.dto.request.CommunityCommentRequestDto;
+import uk.jinhy.server.api.community.presentation.dto.request.CommunityPostRequestDto;
 import uk.jinhy.server.api.domain.User;
 import uk.jinhy.server.service.community.domain.*;
 import uk.jinhy.server.service.domain.UserEntity;
 import uk.jinhy.server.service.user.domain.UserRepository;
-import uk.jinhy.server.api.community.presentation.CommunityDto.CommunityPostRequest;
-import uk.jinhy.server.api.community.presentation.CommunityDto.CommunityCommentRequest;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,7 +55,7 @@ public class CommunityServiceImpl implements CommunityService {
 
     @Override
     @Transactional
-    public CommunityPost createPost(CommunityPostRequest request, Long userId) {
+    public CommunityPost createPost(CreatePostDto request, Long userId) {
         UserEntity userEntity = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
 
@@ -72,7 +76,7 @@ public class CommunityServiceImpl implements CommunityService {
 
     @Override
     @Transactional
-    public CommunityPost updatePost(Long postId, CommunityPostRequest request, Long userId) {
+    public CommunityPost updatePost(Long postId, UpdatePostDto request, Long userId) {
         CommunityPostEntity postEntity = postRepository.findByIdWithAuthor(postId)
             .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다: " + postId));
 
@@ -119,7 +123,7 @@ public class CommunityServiceImpl implements CommunityService {
 
     @Override
     @Transactional
-    public CommunityComment addComment(Long postId, CommunityCommentRequest request, Long userId) {
+    public CommunityComment addComment(Long postId, AddCommentDto request, Long userId) {
         CommunityPostEntity postEntity = postRepository.findById(postId)
             .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다: " + postId));
 
@@ -145,7 +149,7 @@ public class CommunityServiceImpl implements CommunityService {
 
     @Override
     @Transactional
-    public CommunityComment updateComment(Long commentId, CommunityCommentRequest request, Long userId) {
+    public CommunityComment updateComment(Long commentId, UpdateCommentDto request, Long userId) {
         CommunityCommentEntity commentEntity = commentRepository.findByIdWithAuthor(commentId)
             .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다: " + commentId));
 
