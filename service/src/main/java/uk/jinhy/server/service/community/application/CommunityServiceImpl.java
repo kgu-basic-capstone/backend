@@ -1,6 +1,7 @@
 package uk.jinhy.server.service.community.application;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -11,9 +12,8 @@ import uk.jinhy.server.api.community.application.dto.CreatePostDto;
 import uk.jinhy.server.api.community.application.dto.UpdateCommentDto;
 import uk.jinhy.server.api.community.application.dto.UpdatePostDto;
 import uk.jinhy.server.api.community.domain.*;
-import uk.jinhy.server.api.community.presentation.dto.request.CommunityCommentRequestDto;
-import uk.jinhy.server.api.community.presentation.dto.request.CommunityPostRequestDto;
-import uk.jinhy.server.api.domain.User;
+import uk.jinhy.server.api.community.domain.exception.CommentNotFoundException;
+import uk.jinhy.server.api.community.domain.exception.PostNotFoundException;
 import uk.jinhy.server.service.community.domain.*;
 import uk.jinhy.server.service.domain.UserEntity;
 import uk.jinhy.server.service.user.domain.UserRepository;
@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class CommunityServiceImpl implements CommunityService {
-
     private final CommunityPostRepository postRepository;
     private final CommunityCommentRepository commentRepository;
     private final UserRepository userRepository;
@@ -34,12 +34,7 @@ public class CommunityServiceImpl implements CommunityService {
     @Override
     public List<CommunityPost> getPosts(String categoryName, String keyword, int page, int size) {
         Category category = categoryName != null ? Category.valueOf(categoryName) : null;
-
-        Page<CommunityPostEntity> postEntities = postRepository.findBySearchConditions(
-            category,
-            keyword,
-            PageRequest.of(page, size));
-
+        Page<CommunityPostEntity> postEntities = postRepository.findBySearchConditions(category, keyword, PageRequest.of(page, size));
         return postEntities.getContent().stream()
             .map(communityMapper::toDomain)
             .collect(Collectors.toList());
@@ -49,7 +44,6 @@ public class CommunityServiceImpl implements CommunityService {
     public CommunityPost getPost(Long postId) {
         CommunityPostEntity postEntity = postRepository.findByIdWithAuthorAndComments(postId)
             .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다: " + postId));
-
         return communityMapper.toDomain(postEntity);
     }
 
@@ -58,19 +52,15 @@ public class CommunityServiceImpl implements CommunityService {
     public CommunityPost createPost(CreatePostDto request, Long userId) {
         UserEntity userEntity = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
-
-        User user = communityMapper.toDomain(userEntity);
-
+        CommunityPostAuthor author = communityMapper.toPostAuthor(userEntity);
         CommunityPost post = CommunityPost.builder()
             .title(request.getTitle())
             .content(request.getContent())
             .category(Category.valueOf(request.getCategory()))
-            .author(user)
+            .author(author)
             .build();
-
         CommunityPostEntity postEntity = communityMapper.toEntity(post);
         CommunityPostEntity savedEntity = postRepository.save(postEntity);
-
         return communityMapper.toDomain(savedEntity);
     }
 
@@ -79,26 +69,13 @@ public class CommunityServiceImpl implements CommunityService {
     public CommunityPost updatePost(Long postId, UpdatePostDto request, Long userId) {
         CommunityPostEntity postEntity = postRepository.findByIdWithAuthor(postId)
             .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다: " + postId));
-
         UserEntity userEntity = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
-
         CommunityPost post = communityMapper.toDomain(postEntity);
-        User user = communityMapper.toDomain(userEntity);
-
-        if (!post.isAuthor(user)) {
-            throw new IllegalArgumentException("게시글 수정 권한이 없습니다");
-        }
-
-        post.update(
-            request.getTitle(),
-            request.getContent(),
-            Category.valueOf(request.getCategory()),
-            user
-        );
-
+        CommunityPostAuthor author = communityMapper.toPostAuthor(userEntity);
+        post.update(request.getTitle(), request.getContent(), Category.valueOf(request.getCategory()), author);
         communityMapper.updateEntity(postEntity, post);
-
+        postRepository.save(postEntity);
         return communityMapper.toDomain(postEntity);
     }
 
@@ -107,17 +84,11 @@ public class CommunityServiceImpl implements CommunityService {
     public void deletePost(Long postId, Long userId) {
         CommunityPostEntity postEntity = postRepository.findByIdWithAuthor(postId)
             .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다: " + postId));
-
         UserEntity userEntity = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
-
         CommunityPost post = communityMapper.toDomain(postEntity);
-        User user = communityMapper.toDomain(userEntity);
-
-        if (!post.isAuthor(user)) {
-            throw new IllegalArgumentException("게시글 삭제 권한이 없습니다");
-        }
-
+        CommunityPostAuthor author = communityMapper.toPostAuthor(userEntity);
+        post.deleteValidation(author);
         postRepository.delete(postEntity);
     }
 
@@ -126,66 +97,41 @@ public class CommunityServiceImpl implements CommunityService {
     public CommunityComment addComment(Long postId, AddCommentDto request, Long userId) {
         CommunityPostEntity postEntity = postRepository.findById(postId)
             .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다: " + postId));
-
         UserEntity userEntity = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
-
         CommunityPost post = communityMapper.toDomain(postEntity);
-        User user = communityMapper.toDomain(userEntity);
-
-        CommunityComment comment = CommunityComment.builder()
-            .post(post)
-            .author(user)
-            .content(request.getContent())
-            .build();
-
-        post.addComment(comment);
-
-        CommunityCommentEntity commentEntity = communityMapper.toEntity(comment);
+        CommunityCommentAuthor author = communityMapper.toCommentAuthor(userEntity);
+        CommunityComment comment = post.addComment(author, request.getContent());
+        CommunityCommentEntity commentEntity = communityMapper.toEntity(comment, post);
         CommunityCommentEntity savedEntity = commentRepository.save(commentEntity);
-
         return communityMapper.toDomain(savedEntity);
     }
 
     @Override
     @Transactional
     public CommunityComment updateComment(Long commentId, UpdateCommentDto request, Long userId) {
-        CommunityCommentEntity commentEntity = commentRepository.findByIdWithAuthor(commentId)
+        CommunityCommentEntity commentEntity = commentRepository.findById(commentId)
             .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다: " + commentId));
-
         UserEntity userEntity = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
-
         CommunityComment comment = communityMapper.toDomain(commentEntity);
-        User user = communityMapper.toDomain(userEntity);
-
-        if (!comment.isAuthor(user)) {
-            throw new IllegalArgumentException("댓글 수정 권한이 없습니다");
-        }
-
-        comment.updateContent(request.getContent());
-
+        CommunityCommentAuthor author = communityMapper.toCommentAuthor(userEntity);
+        comment.updateContent(author, request.getContent());
         communityMapper.updateEntity(commentEntity, comment);
-
+        commentRepository.save(commentEntity);
         return communityMapper.toDomain(commentEntity);
     }
 
     @Override
     @Transactional
     public void deleteComment(Long commentId, Long userId) {
-        CommunityCommentEntity commentEntity = commentRepository.findByIdWithAuthor(commentId)
+        CommunityCommentEntity commentEntity = commentRepository.findById(commentId)
             .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다: " + commentId));
-
         UserEntity userEntity = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
-
         CommunityComment comment = communityMapper.toDomain(commentEntity);
-        User user = communityMapper.toDomain(userEntity);
-
-        if (!comment.isAuthor(user)) {
-            throw new IllegalArgumentException("댓글 삭제 권한이 없습니다");
-        }
-
+        CommunityCommentAuthor author = communityMapper.toCommentAuthor(userEntity);
+        comment.deleteValidation(author);
         commentRepository.delete(commentEntity);
     }
 }

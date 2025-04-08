@@ -5,14 +5,14 @@ import lombok.*;
 import uk.jinhy.server.api.community.domain.Category;
 import uk.jinhy.server.service.domain.UserEntity;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
 @Table(name = "community_posts")
 public class CommunityPostEntity {
     @Id
@@ -23,18 +23,11 @@ public class CommunityPostEntity {
     @JoinColumn(name = "author_id", nullable = false)
     private UserEntity author;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Category category;
-
-    @Column(nullable = false)
     private String title;
-
-    @Column(length = 5000)
     private String content;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
+    @Enumerated(EnumType.STRING)
+    private Category category;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommunityCommentEntity> comments = new ArrayList<>();
