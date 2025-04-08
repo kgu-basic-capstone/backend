@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import uk.jinhy.server.api.community.domain.exception.CommentDeleteForbiddenException;
-import uk.jinhy.server.api.community.domain.exception.CommentUpdateForbiddenException;
-import uk.jinhy.server.api.community.domain.exception.PostDeleteForbiddenException;
+import uk.jinhy.server.api.domain.User;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -14,23 +14,15 @@ import uk.jinhy.server.api.community.domain.exception.PostDeleteForbiddenExcepti
 @NoArgsConstructor
 public class CommunityComment {
     private Long id;
-    private CommunityCommentAuthor author;
+    private CommunityPost post;
+    private User author;
     private String content;
+    private LocalDateTime createdAt;
 
-    public void updateContent(CommunityCommentAuthor editor, String newContent) {
-        if (!isAuthor(editor)) {
-            throw new CommentUpdateForbiddenException("댓글 작성자가 아닙니다.");
-        }
-        this.content = newContent;
-    }
-
-    private boolean isAuthor(CommunityCommentAuthor user) {
+    public boolean isAuthor(User user) {
         return this.author.getId().equals(user.getId());
     }
-
-    public void deleteValidation(CommunityCommentAuthor user) {
-        if (!isAuthor(user)) {
-            throw new CommentDeleteForbiddenException("작성자만 삭제할 수 있습니다.");
-        }
+    public void updateContent(String newContent) {
+        this.content = newContent;
     }
 }

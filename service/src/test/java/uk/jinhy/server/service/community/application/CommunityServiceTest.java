@@ -4,7 +4,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -14,8 +15,7 @@ import uk.jinhy.server.api.community.application.dto.CreatePostDto;
 import uk.jinhy.server.api.community.application.dto.UpdateCommentDto;
 import uk.jinhy.server.api.community.application.dto.UpdatePostDto;
 import uk.jinhy.server.api.community.domain.*;
-import uk.jinhy.server.api.community.domain.exception.CommentNotFoundException;
-import uk.jinhy.server.api.community.domain.exception.PostNotFoundException;
+import uk.jinhy.server.api.domain.User;
 import uk.jinhy.server.service.community.domain.*;
 import uk.jinhy.server.service.domain.UserEntity;
 import uk.jinhy.server.service.user.domain.UserRepository;
@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 
@@ -41,7 +42,7 @@ class CommunityServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private CommunityMapper communityMapper;
+    private CommunityMapper communityMapper; // 엔티티 <-> 도메인 변환
 
     @InjectMocks
     private CommunityServiceImpl communityService;
@@ -71,6 +72,7 @@ class CommunityServiceTest {
 
             given(postRepository.findBySearchConditions(eq(category), eq(keyword), any(PageRequest.class)))
                 .willReturn(entityPage);
+
             given(communityMapper.toDomain(postEntity1)).willReturn(post1);
             given(communityMapper.toDomain(postEntity2)).willReturn(post2);
 
@@ -161,18 +163,20 @@ class CommunityServiceTest {
             request.setCategory("NOTICE");
 
             UserEntity userEntity = mock(UserEntity.class);
-            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
+            User user = mock(User.class);
+
+            CommunityPost post = mock(CommunityPost.class);
             CommunityPostEntity savedEntity = mock(CommunityPostEntity.class);
             CommunityPost returnedPost = mock(CommunityPost.class);
 
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
+            // 엔티티 -> 도메인
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
 
-            CommunityPostAuthor author = mock(CommunityPostAuthor.class);
-            given(communityMapper.toPostAuthor(userEntity)).willReturn(author);
-
-            given(communityMapper.toEntity(any(CommunityPost.class))).willReturn(postEntity);
-
-            given(postRepository.save(postEntity)).willReturn(savedEntity);
+            // Service 내부에서 post domain을 만들어 -> entity로 변환 -> repo.save(entity)
+            // repo.save(...) 후, 다시 entity -> domain
+            given(communityMapper.toEntity(any(CommunityPost.class))).willReturn(mock(CommunityPostEntity.class));
+            given(postRepository.save(any(CommunityPostEntity.class))).willReturn(savedEntity);
             given(communityMapper.toDomain(savedEntity)).willReturn(returnedPost);
 
             // when
@@ -212,16 +216,21 @@ class CommunityServiceTest {
             request.setContent("Updated Content");
             request.setCategory("NOTICE");
 
-            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
             UserEntity userEntity = mock(UserEntity.class);
+            User user = mock(User.class);
+
+            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
             CommunityPost post = mock(CommunityPost.class);
-            CommunityPostAuthor author = mock(CommunityPostAuthor.class);
 
             given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
 
+            // 엔티티 -> 도메인
             given(communityMapper.toDomain(postEntity)).willReturn(post);
-            given(communityMapper.toPostAuthor(userEntity)).willReturn(author);
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
+
+            // 작성자 체크
+            given(post.isAuthor(user)).willReturn(true);
 
             // when
             CommunityPost result = communityService.updatePost(postId, request, userId);
@@ -229,12 +238,7 @@ class CommunityServiceTest {
             // then
             assertThat(result).isEqualTo(post);
             then(communityMapper).should().updateEntity(eq(postEntity), eq(post));
-            then(post).should().update(
-                eq(request.getTitle()),
-                eq(request.getContent()),
-                eq(Category.valueOf(request.getCategory())),
-                eq(author)
-            );
+            then(post).should().update(eq(request.getTitle()), eq(request.getContent()), any(Category.class), eq(user));
         }
 
         @Test
@@ -245,24 +249,18 @@ class CommunityServiceTest {
             Long userId = 2L;
 
             UpdatePostDto request = new UpdatePostDto();
-            request.setTitle("Updated Title");
-            request.setContent("Updated Content");
-            request.setCategory("NOTICE");
+            UserEntity userEntity = mock(UserEntity.class);
+            User user = mock(User.class);
 
             CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
-            UserEntity userEntity = mock(UserEntity.class);
             CommunityPost post = mock(CommunityPost.class);
-            CommunityPostAuthor wrongAuthor = mock(CommunityPostAuthor.class);
 
             given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
-
             given(communityMapper.toDomain(postEntity)).willReturn(post);
-            given(communityMapper.toPostAuthor(userEntity)).willReturn(wrongAuthor);
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
 
-            doThrow(new IllegalArgumentException("작성자가 아닌 사용자가 게시글을 수정할 수 없습니다."))
-                .when(post)
-                .update(anyString(), anyString(), any(Category.class), eq(wrongAuthor));
+            given(post.isAuthor(user)).willReturn(false);
 
             // when & then
             assertThatExceptionOfType(IllegalArgumentException.class)
@@ -317,15 +315,17 @@ class CommunityServiceTest {
             Long postId = 1L;
             Long userId = 1L;
 
-            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
             UserEntity userEntity = mock(UserEntity.class);
+            User user = mock(User.class);
+
+            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
             CommunityPost post = mock(CommunityPost.class);
-            CommunityPostAuthor author = mock(CommunityPostAuthor.class);
 
             given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
             given(communityMapper.toDomain(postEntity)).willReturn(post);
-            given(communityMapper.toPostAuthor(userEntity)).willReturn(author);
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
+            given(post.isAuthor(user)).willReturn(true);
 
             // when
             communityService.deletePost(postId, userId);
@@ -341,18 +341,17 @@ class CommunityServiceTest {
             Long postId = 1L;
             Long userId = 2L;
 
-            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
             UserEntity userEntity = mock(UserEntity.class);
+            User user = mock(User.class);
+
+            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
             CommunityPost post = mock(CommunityPost.class);
-            CommunityPostAuthor wrongAuthor = mock(CommunityPostAuthor.class);
 
             given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
             given(communityMapper.toDomain(postEntity)).willReturn(post);
-            given(communityMapper.toPostAuthor(userEntity)).willReturn(wrongAuthor);
-
-            doThrow(new IllegalArgumentException("작성자가 아닌 사용자가 게시글을 삭제할 수 없습니다."))
-                .when(post).deleteValidation(wrongAuthor);
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
+            given(post.isAuthor(user)).willReturn(false);
 
             // when & then
             assertThatExceptionOfType(IllegalArgumentException.class)
@@ -411,10 +410,12 @@ class CommunityServiceTest {
             AddCommentDto request = new AddCommentDto();
             request.setContent("Test Comment");
 
-            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
             UserEntity userEntity = mock(UserEntity.class);
+            User user = mock(User.class);
 
+            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
             CommunityPost post = mock(CommunityPost.class);
+
             CommunityComment comment = mock(CommunityComment.class);
             CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
             CommunityCommentEntity savedEntity = mock(CommunityCommentEntity.class);
@@ -424,13 +425,9 @@ class CommunityServiceTest {
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
 
             given(communityMapper.toDomain(postEntity)).willReturn(post);
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
 
-            CommunityCommentAuthor author = mock(CommunityCommentAuthor.class);
-            given(communityMapper.toCommentAuthor(userEntity)).willReturn(author);
-
-            given(post.addComment(author, request.getContent())).willReturn(comment);
-
-            given(communityMapper.toEntity(comment, post)).willReturn(commentEntity);
+            given(communityMapper.toEntity(any(CommunityComment.class))).willReturn(commentEntity);
             given(commentRepository.save(commentEntity)).willReturn(savedEntity);
             given(communityMapper.toDomain(savedEntity)).willReturn(returnedComment);
 
@@ -439,7 +436,7 @@ class CommunityServiceTest {
 
             // then
             assertThat(result).isEqualTo(returnedComment);
-            then(post).should().addComment(author, request.getContent());
+            then(post).should().addComment(any(CommunityComment.class));
         }
 
         @Test
@@ -495,17 +492,19 @@ class CommunityServiceTest {
             UpdateCommentDto request = new UpdateCommentDto();
             request.setContent("Updated Comment");
 
-            CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
             UserEntity userEntity = mock(UserEntity.class);
+            User user = mock(User.class);
 
+            CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
             CommunityComment comment = mock(CommunityComment.class);
-            CommunityCommentAuthor author = mock(CommunityCommentAuthor.class);
 
-            given(commentRepository.findById(commentId)).willReturn(Optional.of(commentEntity));
+            given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.of(commentEntity));
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
 
             given(communityMapper.toDomain(commentEntity)).willReturn(comment);
-            given(communityMapper.toCommentAuthor(userEntity)).willReturn(author);
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
+
+            given(comment.isAuthor(user)).willReturn(true);
 
             // when
             CommunityComment result = communityService.updateComment(commentId, request, userId);
@@ -513,7 +512,7 @@ class CommunityServiceTest {
             // then
             assertThat(result).isEqualTo(comment);
             then(communityMapper).should().updateEntity(eq(commentEntity), eq(comment));
-            then(comment).should().updateContent(author, request.getContent());
+            then(comment).should().updateContent(eq(request.getContent()));
         }
 
         @Test
@@ -524,23 +523,20 @@ class CommunityServiceTest {
             Long userId = 2L;
 
             UpdateCommentDto request = new UpdateCommentDto();
-            request.setContent("Updated Comment");
+
+            UserEntity userEntity = mock(UserEntity.class);
+            User user = mock(User.class);
 
             CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
-            UserEntity userEntity = mock(UserEntity.class);
-
             CommunityComment comment = mock(CommunityComment.class);
-            CommunityCommentAuthor wrongAuthor = mock(CommunityCommentAuthor.class);
 
-            given(commentRepository.findById(commentId)).willReturn(Optional.of(commentEntity));
+            given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.of(commentEntity));
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
 
             given(communityMapper.toDomain(commentEntity)).willReturn(comment);
-            given(communityMapper.toCommentAuthor(userEntity)).willReturn(wrongAuthor);
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
 
-            // 작성자가 아니라면 예외
-            doThrow(new IllegalArgumentException("작성자가 아닌 사용자가 댓글을 수정할 수 없습니다."))
-                .when(comment).updateContent(eq(wrongAuthor), anyString());
+            given(comment.isAuthor(user)).willReturn(false);
 
             // when & then
             assertThatExceptionOfType(IllegalArgumentException.class)
@@ -558,7 +554,7 @@ class CommunityServiceTest {
 
             UpdateCommentDto request = new UpdateCommentDto();
 
-            given(commentRepository.findById(commentId)).willReturn(Optional.empty());
+            given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.empty());
 
             // when & then
             assertThatExceptionOfType(CommentNotFoundException.class)
@@ -575,7 +571,7 @@ class CommunityServiceTest {
             UpdateCommentDto request = new UpdateCommentDto();
             CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
 
-            given(commentRepository.findById(commentId)).willReturn(Optional.of(commentEntity));
+            given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.of(commentEntity));
             given(userRepository.findById(userId)).willReturn(Optional.empty());
 
             // when & then
@@ -597,17 +593,19 @@ class CommunityServiceTest {
             Long commentId = 1L;
             Long userId = 1L;
 
-            CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
             UserEntity userEntity = mock(UserEntity.class);
+            User user = mock(User.class);
 
+            CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
             CommunityComment comment = mock(CommunityComment.class);
-            CommunityCommentAuthor author = mock(CommunityCommentAuthor.class);
 
-            given(commentRepository.findById(commentId)).willReturn(Optional.of(commentEntity));
+            given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.of(commentEntity));
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
 
             given(communityMapper.toDomain(commentEntity)).willReturn(comment);
-            given(communityMapper.toCommentAuthor(userEntity)).willReturn(author);
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
+
+            given(comment.isAuthor(user)).willReturn(true);
 
             // when
             communityService.deleteComment(commentId, userId);
@@ -623,20 +621,19 @@ class CommunityServiceTest {
             Long commentId = 1L;
             Long userId = 2L;
 
-            CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
             UserEntity userEntity = mock(UserEntity.class);
+            User user = mock(User.class);
 
+            CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
             CommunityComment comment = mock(CommunityComment.class);
-            CommunityCommentAuthor wrongAuthor = mock(CommunityCommentAuthor.class);
 
-            given(commentRepository.findById(commentId)).willReturn(Optional.of(commentEntity));
+            given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.of(commentEntity));
             given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
 
             given(communityMapper.toDomain(commentEntity)).willReturn(comment);
-            given(communityMapper.toCommentAuthor(userEntity)).willReturn(wrongAuthor);
+            given(communityMapper.toDomain(userEntity)).willReturn(user);
 
-            doThrow(new IllegalArgumentException("작성자가 아닌 사용자가 댓글을 삭제할 수 없습니다."))
-                .when(comment).deleteValidation(wrongAuthor);
+            given(comment.isAuthor(user)).willReturn(false);
 
             // when & then
             assertThatExceptionOfType(IllegalArgumentException.class)
@@ -652,7 +649,7 @@ class CommunityServiceTest {
             Long commentId = 999L;
             Long userId = 1L;
 
-            given(commentRepository.findById(commentId)).willReturn(Optional.empty());
+            given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.empty());
 
             // when & then
             assertThatExceptionOfType(CommentNotFoundException.class)
@@ -670,7 +667,7 @@ class CommunityServiceTest {
 
             CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
 
-            given(commentRepository.findById(commentId)).willReturn(Optional.of(commentEntity));
+            given(commentRepository.findByIdWithAuthor(commentId)).willReturn(Optional.of(commentEntity));
             given(userRepository.findById(userId)).willReturn(Optional.empty());
 
             // when & then
