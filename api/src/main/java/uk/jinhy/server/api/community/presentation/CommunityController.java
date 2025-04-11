@@ -72,7 +72,8 @@ public interface CommunityController {
     @PutMapping("/api/community/posts/{postId}")
     ResponseEntity<CommunityPostDetailResponseDto> updatePost(
         @Parameter(description = "게시글 ID") @PathVariable Long postId,
-        @RequestBody CommunityPostRequestDto request
+        @RequestBody CommunityPostRequestDto request,
+        @Parameter(description = "유저 ID") @RequestParam("userId") Long userId
     );
 
     @Operation(
@@ -87,7 +88,8 @@ public interface CommunityController {
     )
     @DeleteMapping("/api/community/posts/{postId}")
     ResponseEntity<Void> deletePost(
-        @Parameter(description = "게시글 ID") @PathVariable Long postId
+        @Parameter(description = "게시글 ID") @PathVariable Long postId,
+        @Parameter(description = "유저 ID") @RequestParam("userId") Long userId
     );
 
     @Operation(
@@ -120,7 +122,8 @@ public interface CommunityController {
     @PutMapping("/api/community/comments/{commentId}")
     ResponseEntity<CommunityCommentResponseDto> updateComment(
         @Parameter(description = "댓글 ID") @PathVariable Long commentId,
-        @RequestBody CommunityCommentRequestDto request
+        @RequestBody CommunityCommentRequestDto request,
+        @Parameter(description = "유저 ID") @RequestParam("userId") Long userId
     );
 
     @Operation(
@@ -135,6 +138,7 @@ public interface CommunityController {
     )
     @DeleteMapping("/api/community/comments/{commentId}")
     ResponseEntity<Void> deleteComment(
-        @Parameter(description = "댓글 ID") @PathVariable Long commentId
+        @Parameter(description = "댓글 ID") @PathVariable Long commentId,
+        @Parameter(description = "유저 ID") @RequestParam("userId") Long userId
     );
 }

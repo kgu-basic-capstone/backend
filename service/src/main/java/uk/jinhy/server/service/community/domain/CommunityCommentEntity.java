@@ -4,11 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import uk.jinhy.server.service.domain.UserEntity;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Getter
-@Builder
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "community_comments")
@@ -27,7 +25,4 @@ public class CommunityCommentEntity {
 
     @Column(length = 2000)
     private String content;
-
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
 }
