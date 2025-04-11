@@ -9,7 +9,7 @@ import uk.jinhy.server.api.community.domain.Category;
 
 import java.util.Optional;
 
-public interface CommunityPostRepository extends JpaRepository<CommunityPostEntity, Long> {
+public interface CommunityPostRepository extends JpaRepository<CommunityPostEntity, Long>, CommunityPostRepositoryCustom {
     @Query("SELECT p FROM CommunityPostEntity p WHERE (:category IS NULL OR p.category = :category) " +
         "AND (:keyword IS NULL OR p.title LIKE %:keyword% OR p.content LIKE %:keyword%)")
     Page<CommunityPostEntity> findBySearchConditions(
