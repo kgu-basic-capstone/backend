@@ -29,40 +29,24 @@ public class CommunityControllerImpl implements CommunityController {
 
     @Override
     public ResponseEntity<CommunityPostListResponseDto> getPosts(String category, String keyword, int page, int size) {
-        try {
-            List<CommunityPost> posts = communityService.getPosts(category, keyword, page, size);
-            CommunityPostListResponseDto response = communityMapper.toPostListResponse(posts, page, size);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        List<CommunityPost> posts = communityService.getPosts(category, keyword, page, size);
+        CommunityPostListResponseDto response = communityMapper.toPostListResponse(posts, page, size);
+        return ResponseEntity.ok(response);
     }
 
     @Override
     public ResponseEntity<CommunityPostDetailResponseDto> getPost(Long postId) {
-        try {
-            CommunityPost post = communityService.getPost(postId);
-            CommunityPostDetailResponseDto response = communityMapper.toPostDetailResponse(post);
-            return ResponseEntity.ok(response);
-        } catch (PostNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        CommunityPost post = communityService.getPost(postId);
+        CommunityPostDetailResponseDto response = communityMapper.toPostDetailResponse(post);
+        return ResponseEntity.ok(response);
     }
 
     @Override
     public ResponseEntity<CommunityPostDetailResponseDto> createPost(CommunityPostRequestDto request) {
-        try {
-            Long userId = getCurrentUserId();
-            CommunityPost post = communityService.createPost(communityMapper.toCreatePostDto(request), userId);
-            CommunityPostDetailResponseDto response = communityMapper.toPostDetailResponse(post);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        Long userId = getCurrentUserId();
+        CommunityPost post = communityService.createPost(communityMapper.toCreatePostDto(request), userId);
+        CommunityPostDetailResponseDto response = communityMapper.toPostDetailResponse(post);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Override
@@ -72,15 +56,11 @@ public class CommunityControllerImpl implements CommunityController {
             CommunityPost post = communityService.updatePost(postId, communityMapper.toUpdatePostDto(request), userId);
             CommunityPostDetailResponseDto response = communityMapper.toPostDetailResponse(post);
             return ResponseEntity.ok(response);
-        } catch (PostNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("권한")) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -90,15 +70,11 @@ public class CommunityControllerImpl implements CommunityController {
             Long userId = getCurrentUserId();
             communityService.deletePost(postId, userId);
             return ResponseEntity.noContent().build();
-        } catch (PostNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("권한")) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -109,12 +85,8 @@ public class CommunityControllerImpl implements CommunityController {
             CommunityComment comment = communityService.addComment(postId, communityMapper.toAddCommentDto(request), userId);
             CommunityCommentResponseDto response = communityMapper.toCommentResponse(comment);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (PostNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -125,15 +97,11 @@ public class CommunityControllerImpl implements CommunityController {
             CommunityComment comment = communityService.updateComment(commentId, communityMapper.toUpdateCommentDto(request), userId);
             CommunityCommentResponseDto response = communityMapper.toCommentResponse(comment);
             return ResponseEntity.ok(response);
-        } catch (CommentNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("권한")) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -143,15 +111,11 @@ public class CommunityControllerImpl implements CommunityController {
             Long userId = getCurrentUserId();
             communityService.deleteComment(commentId, userId);
             return ResponseEntity.noContent().build();
-        } catch (CommentNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("권한")) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
