@@ -1,10 +1,12 @@
-package uk.jinhy.server.service.domain;
+package uk.jinhy.server.service.user.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import uk.jinhy.server.service.domain.PetEntity;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,18 +23,19 @@ public class UserEntity {
     private Long id;
 
     @Column(nullable = false, unique = true)
+    private String oauth2UserId;
+
     private String username;
 
-    @Column(nullable = false, unique = true)
     private String email;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PetEntity> pets = new ArrayList<>();
 
     @Builder
-    public UserEntity(String username, String email) {
+    private UserEntity(String oauth2UserId, String username) {
+        this.oauth2UserId = oauth2UserId;
         this.username = username;
-        this.email = email;
     }
 
     public void updateUsername(String username) {
