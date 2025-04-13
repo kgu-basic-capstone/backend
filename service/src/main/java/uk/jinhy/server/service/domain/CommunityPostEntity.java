@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import uk.jinhy.server.api.domain.Category;
+import uk.jinhy.server.service.user.domain.UserEntity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

@@ -1,6 +1,8 @@
 package uk.jinhy.server.service.domain;
 
 
+import uk.jinhy.server.service.user.domain.UserEntity;
+
 public class UserFactory {
     private String username;
     private String email;

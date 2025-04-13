@@ -2,6 +2,7 @@ package uk.jinhy.server.api.domain;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import uk.jinhy.server.api.user.domain.User;
 
 import java.util.List;
 

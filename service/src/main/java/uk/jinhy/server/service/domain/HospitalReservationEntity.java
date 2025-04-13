@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import uk.jinhy.server.service.user.domain.UserEntity;
 
 import java.time.LocalDateTime;
 
