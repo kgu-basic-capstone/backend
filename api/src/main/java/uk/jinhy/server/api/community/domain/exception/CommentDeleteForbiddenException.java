@@ -1,7 +1,9 @@
 package uk.jinhy.server.api.community.domain.exception;
 
-public class CommentDeleteForbiddenException extends RuntimeException {
+import uk.jinhy.server.api.common.exception.HttpException;
+
+public class CommentDeleteForbiddenException extends HttpException.ForbiddenException {
     public CommentDeleteForbiddenException(String message) {
-        super(message);
+        super("community", (short) 1, message);
     }
 }

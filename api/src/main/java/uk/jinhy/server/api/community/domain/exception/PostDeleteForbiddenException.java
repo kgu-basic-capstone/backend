@@ -1,7 +1,9 @@
 package uk.jinhy.server.api.community.domain.exception;
 
-public class PostDeleteForbiddenException extends RuntimeException {
+import uk.jinhy.server.api.common.exception.HttpException;
+
+public class PostDeleteForbiddenException extends HttpException.ForbiddenException {
     public PostDeleteForbiddenException(String message) {
-        super(message);
+        super("community", (short) 4, message);
     }
 }
