@@ -42,4 +42,32 @@ public class VaccinationEntity {
         this.isCompleted = isCompleted;
     }
 
+
+    public String getVaccineName() {
+        return vaccineName;
+    }
+
+    public LocalDate getVaccinationDate() {
+        return vaccinationDate;
+    }
+
+    public LocalDate getNextVaccinationDate() {
+        return nextVaccinationDate;
+    }
+
+    public boolean setIsCompleted(boolean isCompleted) {
+        return isCompleted;
+    }
+
+    public void setVaccineName(String vaccineName) {
+        this.vaccineName = vaccineName;
+    }
+
+    public void setVaccinationDate(LocalDate vaccinationDate) {
+        this.vaccinationDate = vaccinationDate;
+    }
+
+    public void setNextVaccinationDate(LocalDate nextVaccinationDate) {
+        this.nextVaccinationDate = nextVaccinationDate;
+    }
 }

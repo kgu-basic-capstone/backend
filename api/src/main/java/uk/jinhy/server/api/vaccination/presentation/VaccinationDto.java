@@ -4,9 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import uk.jinhy.server.api.domain.Vaccination;
 
 import java.time.LocalDate;
 import java.util.List;
+
 
 public class VaccinationDto {
 
@@ -40,5 +42,17 @@ public class VaccinationDto {
     public static class VaccinationListResponse {
         private List<VaccinationResponse> vaccinations;
         private int total;
+    }
+
+    // Entity → DTO 변환 메서드
+    public static VaccinationResponse fromEntity(Vaccination entity) {
+        return VaccinationResponse.builder()
+            .id(entity.getId())  // 백신 기록 ID
+            .petId(entity.getPet().getId())  // 반려동물 ID
+            .vaccineName(entity.getVaccineName())  // 백신 이름
+            .vaccinationDate(entity.getVaccinationDate())  // 접종 날짜
+            .nextVaccinationDate(entity.getNextVaccinationDate())  // 다음 접종 날짜
+            .isCompleted(entity.getIsCompleted())  // 접종 완료 여부
+            .build();
     }
 }

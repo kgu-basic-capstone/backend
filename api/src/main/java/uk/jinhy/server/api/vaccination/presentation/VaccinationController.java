@@ -41,7 +41,8 @@ public interface VaccinationController {
     @GetMapping("/api/pets/{petId}/vaccinations")
     ResponseEntity<VaccinationListResponse> getVaccinations(
         @Parameter(description = "반려동물 ID") @PathVariable Long petId,
-        @Parameter(description = "완료된 백신만 조회") @RequestParam(required = false) Boolean completed
+        @Parameter(description = "완료된 백신만 조회") @RequestParam(required = false) Boolean completed,
+        @Parameter(description = "예정된 백신만 조회") @RequestParam(required = false) Boolean upcoming
     );
 
     @Operation(
