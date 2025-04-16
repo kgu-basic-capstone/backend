@@ -1,11 +1,9 @@
 package uk.jinhy.server.service.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import uk.jinhy.server.service.user.domain.UserEntity;
+import lombok.*;
+import org.springframework.context.annotation.Bean;
+import uk.jinhy.server.service.vaccination.presentation.VaccinationRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,6 +13,8 @@ import java.util.stream.Collectors;
 
 @Entity
 @Getter
+@AllArgsConstructor
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "pets")
 public class PetEntity {
