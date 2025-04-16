@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import uk.jinhy.server.api.disease.application.DiseaseImageService;
-import uk.jinhy.server.api.disease.domain.exception.TaskNotFoundException;
 import uk.jinhy.server.api.disease.presentation.DiseaseController;
 import uk.jinhy.server.api.disease.presentation.dto.request.DiseaseImageRequestDto;
 import uk.jinhy.server.api.disease.presentation.dto.response.DiseaseImageResponseDto;

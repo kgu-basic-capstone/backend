@@ -1,7 +1,9 @@
 package uk.jinhy.server.api.disease.domain.exception;
 
-public class TaskNotFoundException extends RuntimeException {
+import uk.jinhy.server.api.common.exception.HttpException;
+
+public class TaskNotFoundException extends HttpException.NotFoundException {
     public TaskNotFoundException(String message) {
-        super(message);
+        super("disease", (short) 1, message);
     }
-} 
+}

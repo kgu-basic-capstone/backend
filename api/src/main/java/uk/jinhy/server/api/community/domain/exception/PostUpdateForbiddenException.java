@@ -1,7 +1,9 @@
 package uk.jinhy.server.api.community.domain.exception;
 
-public class PostUpdateForbiddenException extends RuntimeException {
+import uk.jinhy.server.api.common.exception.HttpException;
+
+public class PostUpdateForbiddenException extends HttpException.ForbiddenException {
     public PostUpdateForbiddenException(String message) {
-        super(message);
+        super("community", (short) 6, message);
     }
 }

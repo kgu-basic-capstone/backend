@@ -1,7 +1,9 @@
 package uk.jinhy.server.api.community.domain.exception;
 
-public class PostNotFoundException extends RuntimeException {
+import uk.jinhy.server.api.common.exception.HttpException;
+
+public class PostNotFoundException extends HttpException.NotFoundException {
     public PostNotFoundException(String message) {
-        super(message);
+        super("community", (short) 5, message);
     }
 }
