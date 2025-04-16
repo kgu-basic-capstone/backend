@@ -55,7 +55,7 @@ class DiseaseIntegrationTest extends IntegrationTest {
                 .file(imageFile)
                 .contentType(MediaType.MULTIPART_FORM_DATA));
 
-            result.andExpect(status().isOk())
+            result.andExpect(status().isCreated())
                 .andExpect(jsonPath("$.taskId").exists())
                 .andExpect(jsonPath("$.status").value("PENDING"))
                 .andExpect(jsonPath("$.message").exists());
