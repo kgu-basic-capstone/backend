@@ -1,26 +1,21 @@
 package uk.jinhy.server.api.user.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import uk.jinhy.server.api.domain.Pet;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@AllArgsConstructor
+@Builder
 public class User {
 
     private Long id;
     private String username;
     private String email;
     private List<Pet> pets;
-
-    @Builder
-    private User(String username, String email) {
-        this.username = username;
-        this.email = email;
-        this.pets = new ArrayList<>();
-    }
 
     public void updateUsername(String username) {
         this.username = username;

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import uk.jinhy.server.service.user.domain.UserEntityRepository;
 
 @Slf4j
-@Transactional
 @RequiredArgsConstructor
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {

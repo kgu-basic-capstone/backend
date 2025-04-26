@@ -39,9 +39,16 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
   implementation 'org.springframework.boot:spring-boot-starter-web'
   implementation 'org.springframework.boot:spring-boot-starter-test'
+  implementation 'io.github.openfeign.querydsl:querydsl-core:6.11'
+  implementation 'io.github.openfeign.querydsl:querydsl-jpa:6.11'
+  implementation 'io.github.openfeign.querydsl:querydsl-apt:6.11'
+  annotationProcessor 'io.github.openfeign.querydsl:querydsl-apt:6.11:jpa'
+  annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
+  annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
   implementation 'org.springframework.kafka:spring-kafka'
   implementation 'org.projectlombok:lombok'
   implementation 'org.mapstruct:mapstruct:1.6.3'
+  implementation 'org.springframework.integration:spring-integration-redis'
   implementation 'org.springframework.boot:spring-boot-starter-data-redis'
   developmentOnly 'org.springframework.boot:spring-boot-devtools'
   implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.1'
@@ -62,5 +69,19 @@ dependencies {
 }
 
 tasks.named('test') {
-  useJUnitPlatform()
+    useJUnitPlatform()
+}
+
+def generated = 'src/main/generated'
+
+tasks.withType(JavaCompile) {
+  options.getGeneratedSourceOutputDirectory().set(file(generated))
+}
+
+sourceSets {
+  main.java.srcDirs += [ generated ]
+}
+
+clean {
+  delete file(generated)
 }
