@@ -46,6 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (accessToken != null && !JwtProvider.isValid(accessToken)) {
             log.info("Invalid access token");
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return;
         }
         if (accessToken != null && JwtProvider.isExpired(accessToken)) {
             log.info("Expired access token");
