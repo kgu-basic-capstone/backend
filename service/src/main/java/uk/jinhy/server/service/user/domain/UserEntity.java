@@ -1,17 +1,18 @@
-package uk.jinhy.server.service.domain;
+package uk.jinhy.server.service.user.domain;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import uk.jinhy.server.service.domain.PetEntity;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "users", uniqueConstraints = {
     @UniqueConstraint(columnNames = "username"),
     @UniqueConstraint(columnNames = "email")
@@ -22,13 +23,20 @@ public class UserEntity {
     private Long id;
 
     @Column(nullable = false, unique = true)
+    private String oauth2UserId;
+
     private String username;
 
-    @Column(nullable = false, unique = true)
     private String email;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PetEntity> pets = new ArrayList<>();
+
+    @Builder
+    private UserEntity(String oauth2UserId, String username) {
+        this.oauth2UserId = oauth2UserId;
+        this.username = username;
+    }
 
     public void updateUsername(String username) {
         this.username = username;

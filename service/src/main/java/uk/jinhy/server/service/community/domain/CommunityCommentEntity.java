@@ -2,7 +2,7 @@ package uk.jinhy.server.service.community.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import uk.jinhy.server.service.domain.UserEntity;
+import uk.jinhy.server.service.user.domain.UserEntity;
 
 @Entity
 @Getter

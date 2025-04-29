@@ -44,8 +44,8 @@ public class DiseaseImageJobLauncher {
 
             if (acquired) {
                 JobParameters jobParameters = new JobParametersBuilder()
-                        .addDate("launchDate", new Date())
-                        .toJobParameters();
+                    .addDate("launchDate", new Date())
+                    .toJobParameters();
 
                 try {
                     jobLauncher.run(diseaseImageAnalysisJob, jobParameters);

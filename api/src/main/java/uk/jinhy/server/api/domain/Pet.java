@@ -2,6 +2,7 @@ package uk.jinhy.server.api.domain;
 
 import lombok.Builder;
 import lombok.Getter;
+import uk.jinhy.server.api.user.domain.User;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

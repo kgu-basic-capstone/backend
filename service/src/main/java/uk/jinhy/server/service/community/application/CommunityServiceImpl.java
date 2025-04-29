@@ -15,7 +15,7 @@ import uk.jinhy.server.api.community.domain.*;
 import uk.jinhy.server.api.community.domain.exception.CommentNotFoundException;
 import uk.jinhy.server.api.community.domain.exception.PostNotFoundException;
 import uk.jinhy.server.service.community.domain.*;
-import uk.jinhy.server.service.domain.UserEntity;
+import uk.jinhy.server.service.user.domain.UserEntity;
 import uk.jinhy.server.service.user.domain.UserRepository;
 
 import java.util.List;

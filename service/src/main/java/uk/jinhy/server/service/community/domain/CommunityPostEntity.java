@@ -3,7 +3,7 @@ package uk.jinhy.server.service.community.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import uk.jinhy.server.api.community.domain.Category;
-import uk.jinhy.server.service.domain.UserEntity;
+import uk.jinhy.server.service.user.domain.UserEntity;
 
 import java.util.ArrayList;
 import java.util.List;
