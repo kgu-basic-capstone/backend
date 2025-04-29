@@ -1,8 +1,9 @@
-package uk.jinhy.server.api.domain;
+package uk.jinhy.server.api.user.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import uk.jinhy.server.api.domain.Pet;
 
 import java.util.List;
 

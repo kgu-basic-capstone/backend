@@ -11,7 +11,7 @@ import uk.jinhy.server.api.community.presentation.dto.request.CommunityPostReque
 import uk.jinhy.server.api.community.presentation.dto.response.CommunityCommentResponseDto;
 import uk.jinhy.server.api.community.presentation.dto.response.CommunityPostDetailResponseDto;
 import uk.jinhy.server.api.community.presentation.dto.response.CommunityPostListResponseDto;
-import uk.jinhy.server.service.domain.UserEntity;
+import uk.jinhy.server.service.user.domain.UserEntity;
 
 import java.util.List;
 
