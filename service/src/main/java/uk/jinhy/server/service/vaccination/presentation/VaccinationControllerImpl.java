@@ -38,36 +38,4 @@ public class VaccinationControllerImpl implements VaccinationController {
         return ResponseEntity.ok(response);
     }
 }
-    //    @Override
-//    public ResponseEntity<VaccinationResponse> addVaccination(Long petId, VaccinationRequest request) {
-//        VaccinationResponse mockResponse = VaccinationResponse.builder()
-//            .id(1L)
-//            .petId(petId)
-//            .vaccineName(request.getVaccineName())
-//            .vaccinationDate(request.getVaccinationDate())
-//            .nextVaccinationDate(request.getNextVaccinationDate())
-//            .isCompleted(false)
-//            .build();
-//
-//        return ResponseEntity.status(HttpStatus.CREATED).body(mockResponse);
-//    }
 
-
-//    @Override
-//    public ResponseEntity<Void> deleteVaccination(Long petId, Long vaccinationId) {
-//        return ResponseEntity.noContent().build();
-//    }
-//
-//    @Override
-//    public ResponseEntity<VaccinationResponse> completeVaccination(Long petId, Long vaccinationId, boolean completed) {
-//        VaccinationResponse mockResponse = VaccinationResponse.builder()
-//            .id(vaccinationId)
-//            .petId(petId)
-//            .vaccineName("종합백신 3차")
-//            .vaccinationDate(LocalDate.now())
-//            .nextVaccinationDate(LocalDate.now().plusMonths(12))
-//            .isCompleted(completed)
-//            .build();
-//
-//        return ResponseEntity.ok(mockResponse);
-//    }
