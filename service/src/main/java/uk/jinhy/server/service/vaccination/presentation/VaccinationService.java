@@ -47,7 +47,8 @@ public class VaccinationService {
         if (completed != null && completed) {
             // 완료된 백신만 조회
             vaccinations = vaccinationRepository.findByPetIdAndIsCompleted(petId, true);
-        } else if (upcoming != null && upcoming) {
+        }
+        if (upcoming != null && upcoming) {
             // 예정된 백신만 조회
             vaccinations = vaccinationRepository.findByPetIdAndVaccinationDateAfter(petId, LocalDate.now());
         } else {
@@ -97,7 +98,8 @@ public class VaccinationService {
 
         if (completed != null && completed) {
             vaccinations = vaccinationRepository.findByPetOwnerIdAndIsCompleted(userId, true);
-        } else if (upcoming != null && upcoming) {
+        }
+        if (upcoming != null && upcoming) {
             vaccinations = vaccinationRepository.findByPetOwnerIdAndVaccinationDateAfter(userId, LocalDate.now());
         } else {
             vaccinations = vaccinationRepository.findByPetOwnerId(userId);
