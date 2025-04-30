@@ -2,6 +2,7 @@ package uk.jinhy.server.api.domain;
 
 import lombok.Builder;
 import lombok.Getter;
+import uk.jinhy.server.api.pet.domain.Pet;
 
 import java.util.ArrayList;
 import java.util.List;

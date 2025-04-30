@@ -1,7 +1,9 @@
-package uk.jinhy.server.api.domain;
+package uk.jinhy.server.api.pet.domain;
 
 import lombok.Builder;
 import lombok.Getter;
+import uk.jinhy.server.api.domain.HealthRecord;
+import uk.jinhy.server.api.domain.User;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

@@ -71,48 +71,48 @@ public interface PetController {
         @Parameter(description = "반려동물 ID") @PathVariable Long petId
     );
 
-    @Operation(
-        summary = "건강기록 추가",
-        description = "반려동물의 건강 기록을 추가합니다.",
-        responses = {
-            @ApiResponse(responseCode = "200", description = "건강기록 추가 성공"),
-            @ApiResponse(responseCode = "404", description = "반려동물을 찾을 수 없음"),
-            @ApiResponse(responseCode = "401", description = "인증 실패")
-        }
-    )
-    @PostMapping("/api/pets/{petId}/health-records")
-    ResponseEntity<HealthRecordResponse> addHealthRecord(
-        @Parameter(description = "반려동물 ID") @PathVariable Long petId,
-        @RequestBody HealthRecordRequest request
-    );
-
-    @Operation(
-        summary = "건강기록 조회",
-        description = "반려동물의 건강 기록을 조회합니다. 날짜 필터링이 가능합니다.",
-        responses = {
-            @ApiResponse(responseCode = "200", description = "건강기록 조회 성공"),
-            @ApiResponse(responseCode = "404", description = "반려동물을 찾을 수 없음"),
-            @ApiResponse(responseCode = "401", description = "인증 실패")
-        }
-    )
-    @GetMapping("/api/pets/{petId}/health-records")
-    ResponseEntity<List<HealthRecordResponse>> getHealthRecords(
-        @Parameter(description = "반려동물 ID") @PathVariable Long petId,
-        @Parameter(description = "특정 날짜 이후 기록만 조회") @RequestParam(required = false) LocalDateTime since
-    );
-
-    @Operation(
-        summary = "건강기록 삭제",
-        description = "반려동물의 특정 건강 기록을 삭제합니다.",
-        responses = {
-            @ApiResponse(responseCode = "204", description = "건강기록 삭제 성공"),
-            @ApiResponse(responseCode = "404", description = "건강기록을 찾을 수 없음"),
-            @ApiResponse(responseCode = "401", description = "인증 실패")
-        }
-    )
-    @DeleteMapping("/api/pets/{petId}/health-records/{recordId}")
-    ResponseEntity<Void> deleteHealthRecord(
-        @Parameter(description = "반려동물 ID") @PathVariable Long petId,
-        @Parameter(description = "건강기록 ID") @PathVariable Long recordId
-    );
+//    @Operation(
+//        summary = "건강기록 추가",
+//        description = "반려동물의 건강 기록을 추가합니다.",
+//        responses = {
+//            @ApiResponse(responseCode = "200", description = "건강기록 추가 성공"),
+//            @ApiResponse(responseCode = "404", description = "반려동물을 찾을 수 없음"),
+//            @ApiResponse(responseCode = "401", description = "인증 실패")
+//        }
+//    )
+//    @PostMapping("/api/pets/{petId}/health-records")
+//    ResponseEntity<HealthRecordResponse> addHealthRecord(
+//        @Parameter(description = "반려동물 ID") @PathVariable Long petId,
+//        @RequestBody HealthRecordRequest request
+//    );
+//
+//    @Operation(
+//        summary = "건강기록 조회",
+//        description = "반려동물의 건강 기록을 조회합니다. 날짜 필터링이 가능합니다.",
+//        responses = {
+//            @ApiResponse(responseCode = "200", description = "건강기록 조회 성공"),
+//            @ApiResponse(responseCode = "404", description = "반려동물을 찾을 수 없음"),
+//            @ApiResponse(responseCode = "401", description = "인증 실패")
+//        }
+//    )
+//    @GetMapping("/api/pets/{petId}/health-records")
+//    ResponseEntity<List<HealthRecordResponse>> getHealthRecords(
+//        @Parameter(description = "반려동물 ID") @PathVariable Long petId,
+//        @Parameter(description = "특정 날짜 이후 기록만 조회") @RequestParam(required = false) LocalDateTime since
+//    );
+//
+//    @Operation(
+//        summary = "건강기록 삭제",
+//        description = "반려동물의 특정 건강 기록을 삭제합니다.",
+//        responses = {
+//            @ApiResponse(responseCode = "204", description = "건강기록 삭제 성공"),
+//            @ApiResponse(responseCode = "404", description = "건강기록을 찾을 수 없음"),
+//            @ApiResponse(responseCode = "401", description = "인증 실패")
+//        }
+//    )
+//    @DeleteMapping("/api/pets/{petId}/health-records/{recordId}")
+//    ResponseEntity<Void> deleteHealthRecord(
+//        @Parameter(description = "반려동물 ID") @PathVariable Long petId,
+//        @Parameter(description = "건강기록 ID") @PathVariable Long recordId
+//    );
 }

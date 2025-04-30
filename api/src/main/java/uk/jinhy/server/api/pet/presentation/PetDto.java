@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import uk.jinhy.server.api.pet.domain.Pet;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ public class PetDto {
     public static class PetCreateRequest {
         private String name;
         private LocalDate birthDate;
+        private Long UserId;
     }
 
     @Getter
@@ -40,6 +42,22 @@ public class PetDto {
             private Long id;
             private String username;
             private String email;
+        }
+
+        public static PetDetailResponse from(Pet pet) {
+            return PetDetailResponse.builder()
+                .id(pet.getId())
+                .name(pet.getName())
+                .birthDate(pet.getBirthDate())
+                .owner(
+                    OwnerInfo.builder()
+                        .id(pet.getOwner().getId())
+                        .username(pet.getOwner().getUsername())
+                        .email(null) // 임시로 null
+                        .build()
+                )
+                .healthRecords(List.of()) // 나중에 healthRecords 매핑 추가 예정
+                .build();
         }
     }
 

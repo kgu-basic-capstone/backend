@@ -1,10 +1,13 @@
-package uk.jinhy.server.service.domain;
+package uk.jinhy.server.service.pet.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import uk.jinhy.server.service.domain.HealthRecordEntity;
+import uk.jinhy.server.service.domain.UserEntity;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
