@@ -37,9 +37,9 @@ public class VaccinationService {
     }
 
     public VaccinationDto.VaccinationListResponse getVaccinations(Long petId, Boolean completed, Boolean upcoming) {
-        // Pet 존재 확인
+        // Pet 존재 확인( 404 Not Found )
         if (!petRepository.existsById(petId)) {
-            throw new RuntimeException("Pet not found with id: " + petId);
+            throw new PetNotFoundException(petId);
         }
 
         List<VaccinationEntity> vaccinations;
@@ -94,6 +94,8 @@ public class VaccinationService {
 
     // 특정 사용자의 모든 반려동물 백신 조회
     public VaccinationDto.VaccinationListResponse getVaccinationsByUserId(Long userId, Boolean completed, Boolean upcoming) {
+
+
         List<VaccinationEntity> vaccinations;
 
         if (completed != null && completed) {
