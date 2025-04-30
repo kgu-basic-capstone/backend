@@ -44,4 +44,23 @@ public class PetControllerImpl implements PetController {
         petService.deletePet(petId);
         return ResponseEntity.noContent().build();
     }
+
+    @Override
+    public ResponseEntity<HealthRecordResponse> addHealthRecord(Long petId, HealthRecordRequest request) {
+        HealthRecordResponse response = petService.addHealthRecord(petId, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<List<HealthRecordResponse>> getHealthRecords(Long petId, LocalDateTime since) {
+        List<HealthRecordResponse> responses = petService.getHealthRecords(petId, since);
+        return ResponseEntity.ok(responses);
+    }
+
+    @Override
+    public ResponseEntity<Void> deleteHealthRecord(Long petId, Long recordId) {
+        petService.deleteHealthRecord(petId, recordId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

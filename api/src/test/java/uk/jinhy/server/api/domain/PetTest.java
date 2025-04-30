@@ -2,6 +2,7 @@ package uk.jinhy.server.api.domain;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import uk.jinhy.server.api.pet.domain.HealthRecord;
 import uk.jinhy.server.api.pet.domain.Pet;
 
 import java.time.LocalDate;

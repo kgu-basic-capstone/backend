@@ -1,5 +1,6 @@
 package uk.jinhy.server.service.domain;
 
+import uk.jinhy.server.service.pet.domain.HealthRecordMapper;
 import uk.jinhy.server.service.pet.domain.PetEntity;
 
 import java.time.LocalDateTime;
@@ -41,8 +42,8 @@ public class HealthRecordFactory {
         return this;
     }
 
-    public HealthRecordEntity build() {
-        return HealthRecordEntity.builder()
+    public HealthRecordMapper.HealthRecordEntity build() {
+        return HealthRecordMapper.HealthRecordEntity.builder()
             .pet(this.pet)
             .checkDate(this.checkDate)
             .weight(this.weight)

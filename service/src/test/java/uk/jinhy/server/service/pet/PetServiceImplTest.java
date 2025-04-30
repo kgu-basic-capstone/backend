@@ -8,9 +8,7 @@ import uk.jinhy.server.api.pet.presentation.PetDto.PetCreateRequest;
 import uk.jinhy.server.api.pet.presentation.PetDto.PetDetailResponse;
 import uk.jinhy.server.service.domain.UserEntity;
 import uk.jinhy.server.service.pet.application.PetServiceImpl;
-import uk.jinhy.server.service.pet.domain.PetEntity;
-import uk.jinhy.server.service.pet.domain.PetMapper;
-import uk.jinhy.server.service.pet.domain.PetRepository;
+import uk.jinhy.server.service.pet.domain.*;
 import uk.jinhy.server.service.user.domain.UserMapper;
 import uk.jinhy.server.service.user.domain.UserRepository;
 
@@ -27,14 +25,18 @@ class PetServiceImplTest {
     private PetMapper petMapper;
     private UserMapper userMapper;
     private PetServiceImpl petService;
+    private HealthRecordRepository healthRecordRepository;
+    private HealthRecordMapper healthRecordMapper;
 
     @BeforeEach
     void setUp() {
         petRepository = mock(PetRepository.class);
         userRepository = mock(UserRepository.class);
+        healthRecordRepository = mock(HealthRecordRepository.class);
+        healthRecordMapper = mock(HealthRecordMapper.class);
         petMapper = mock(PetMapper.class);
         userMapper = mock(UserMapper.class);
-        petService = new PetServiceImpl(petRepository, userRepository, petMapper, userMapper);
+        petService = new PetServiceImpl(petRepository, userRepository, healthRecordRepository, healthRecordMapper, petMapper, userMapper);
     }
 
     @Test

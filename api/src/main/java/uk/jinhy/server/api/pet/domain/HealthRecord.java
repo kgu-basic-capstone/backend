@@ -1,9 +1,8 @@
-package uk.jinhy.server.api.domain;
+package uk.jinhy.server.api.pet.domain;
 
 
 import lombok.Builder;
 import lombok.Getter;
-import uk.jinhy.server.api.pet.domain.Pet;
 
 import java.time.LocalDateTime;
 

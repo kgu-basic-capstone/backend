@@ -5,7 +5,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import uk.jinhy.server.service.domain.HealthRecordEntity;
 import uk.jinhy.server.service.domain.UserEntity;
 
 import java.time.LocalDate;
@@ -34,7 +33,7 @@ public class PetEntity {
     private LocalDate birthDate;
 
     @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<HealthRecordEntity> healthRecords = new ArrayList<>();
+    private List<HealthRecordMapper.HealthRecordEntity> healthRecords = new ArrayList<>();
 
     @Builder
     public PetEntity(UserEntity owner, String name, LocalDate birthDate) {
@@ -43,25 +42,25 @@ public class PetEntity {
         this.birthDate = birthDate;
     }
 
-    public HealthRecordEntity saveHealthRecord(HealthRecordEntity healthRecord) {
+    public HealthRecordMapper.HealthRecordEntity saveHealthRecord(HealthRecordMapper.HealthRecordEntity healthRecord) {
         healthRecord.setPet(this);
         this.healthRecords.add(healthRecord);
         return healthRecord;
     }
 
-    public HealthRecordEntity deleteHealthRecord(HealthRecordEntity healthRecord) {
+    public HealthRecordMapper.HealthRecordEntity deleteHealthRecord(HealthRecordMapper.HealthRecordEntity healthRecord) {
         this.healthRecords.remove(healthRecord);
         return healthRecord;
     }
 
-    public HealthRecordEntity updateHealthRecord(HealthRecordEntity originalRecord, HealthRecordEntity updatedRecord) {
+    public HealthRecordMapper.HealthRecordEntity updateHealthRecord(HealthRecordMapper.HealthRecordEntity originalRecord, HealthRecordMapper.HealthRecordEntity updatedRecord) {
         this.healthRecords.remove(originalRecord);
         updatedRecord.setPet(this);
         this.healthRecords.add(updatedRecord);
         return updatedRecord;
     }
 
-    public List<HealthRecordEntity> getHealthRecordsAfter(LocalDateTime dateTime) {
+    public List<HealthRecordMapper.HealthRecordEntity> getHealthRecordsAfter(LocalDateTime dateTime) {
         return this.healthRecords.stream()
             .filter(record -> record.getCheckDate().isAfter(dateTime))
             .collect(Collectors.toList());

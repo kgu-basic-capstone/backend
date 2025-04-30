@@ -2,21 +2,21 @@ package uk.jinhy.server.service.pet.application;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import uk.jinhy.server.api.domain.User;
 import uk.jinhy.server.api.pet.application.PetService;
 import uk.jinhy.server.api.pet.domain.Pet;
 import uk.jinhy.server.api.pet.presentation.PetDto.PetCreateRequest;
 import uk.jinhy.server.api.pet.presentation.PetDto.PetDetailResponse;
 import uk.jinhy.server.api.pet.presentation.PetDto.PetListResponse;
 import uk.jinhy.server.service.domain.UserEntity;
-import uk.jinhy.server.service.pet.domain.PetEntity;
-import uk.jinhy.server.service.pet.domain.PetMapper;
-import uk.jinhy.server.service.pet.domain.PetRepository;
+import uk.jinhy.server.service.pet.domain.*;
 import uk.jinhy.server.service.pet.exception.PetNotFoundException;
 import uk.jinhy.server.service.pet.exception.UserNotFoundException;
 import uk.jinhy.server.service.user.domain.UserMapper;
 import uk.jinhy.server.service.user.domain.UserRepository;
+import uk.jinhy.server.api.pet.presentation.PetDto.HealthRecordResponse;
+import uk.jinhy.server.api.pet.presentation.PetDto.HealthRecordRequest;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +26,8 @@ public class PetServiceImpl implements PetService {
 
     private final PetRepository petRepository;
     private final UserRepository userRepository;
+    private final HealthRecordRepository healthRecordRepository;
+    private final HealthRecordMapper healthRecordMapper;
     private final PetMapper petMapper;
     private final UserMapper userMapper;
 
@@ -79,4 +81,51 @@ public class PetServiceImpl implements PetService {
 
         petRepository.delete(petEntity);
     }
+
+    @Override
+    public HealthRecordResponse addHealthRecord(Long petId, HealthRecordRequest request) {
+        PetEntity petEntity = petRepository.findById(petId)
+            .orElseThrow(() -> new PetNotFoundException(petId));
+
+        HealthRecordMapper.HealthRecordEntity entity = HealthRecordMapper.HealthRecordEntity.builder()
+            .pet(petEntity)
+            .checkDate(request.getCheckDate())
+            .weight(request.getWeight())
+            .notes(request.getNotes())
+            .build();
+
+        HealthRecordMapper.HealthRecordEntity saved = healthRecordRepository.save(entity);
+
+        return HealthRecordResponse.from(healthRecordMapper.toDomain(saved));
+    }
+
+
+    @Override
+    public List<HealthRecordResponse> getHealthRecords(Long petId, LocalDateTime since) {
+        PetEntity petEntity = petRepository.findById(petId)
+            .orElseThrow(() -> new PetNotFoundException(petId));
+
+        List<HealthRecordMapper.HealthRecordEntity> records = healthRecordRepository.findByPetAndCheckDateAfter(petEntity, since);
+
+        return records.stream()
+            .map(healthRecordMapper::toDomain)
+            .map(HealthRecordResponse::from)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteHealthRecord(Long petId, Long recordId) {
+        PetEntity petEntity = petRepository.findById(petId)
+            .orElseThrow(() -> new PetNotFoundException(petId));
+
+        HealthRecordMapper.HealthRecordEntity record = healthRecordRepository.findById(recordId)
+            .orElseThrow(() -> new IllegalArgumentException("건강 기록이 존재하지 않습니다."));
+
+        if (!record.getPet().getId().equals(petEntity.getId())) {
+            throw new IllegalArgumentException("해당 반려동물의 건강 기록이 아닙니다.");
+        }
+
+        healthRecordRepository.delete(record);
+    }
+
 }

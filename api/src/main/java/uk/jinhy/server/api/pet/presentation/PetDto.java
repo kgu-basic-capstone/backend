@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import uk.jinhy.server.api.pet.domain.HealthRecord;
 import uk.jinhy.server.api.pet.domain.Pet;
 
 import java.time.LocalDate;
@@ -91,5 +92,14 @@ public class PetDto {
         private LocalDateTime checkDate;
         private Double weight;
         private String notes;
+
+        public static HealthRecordResponse from(HealthRecord healthRecord) {
+            HealthRecordResponse response = new HealthRecordResponse();
+            response.checkDate = healthRecord.getCheckDate();
+            response.weight = healthRecord.getWeight();
+            response.notes = healthRecord.getNotes();
+            return response;
+        }
+
     }
 }
