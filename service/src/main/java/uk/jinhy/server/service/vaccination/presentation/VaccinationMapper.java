@@ -11,7 +11,7 @@ import org.mapstruct.factory.Mappers;
 public interface VaccinationMapper {
     VaccinationMapper INSTANCE = Mappers.getMapper(VaccinationMapper.class);
 
-    @Mapping(source = "pet.id", target = "petId")  // Entity 내 pet 객체의 id를 DTO의 petId로 매핑
+    @Mapping(source = "pet.id", target = "petId")
     VaccinationResponse fromEntity(VaccinationEntity entity);
 
 }
