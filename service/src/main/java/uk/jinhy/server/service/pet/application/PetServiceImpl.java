@@ -87,14 +87,14 @@ public class PetServiceImpl implements PetService {
         PetEntity petEntity = petRepository.findById(petId)
             .orElseThrow(() -> new PetNotFoundException(petId));
 
-        HealthRecordMapper.HealthRecordEntity entity = HealthRecordMapper.HealthRecordEntity.builder()
+        HealthRecordEntity entity = HealthRecordEntity.builder()
             .pet(petEntity)
             .checkDate(request.getCheckDate())
             .weight(request.getWeight())
             .notes(request.getNotes())
             .build();
 
-        HealthRecordMapper.HealthRecordEntity saved = healthRecordRepository.save(entity);
+        HealthRecordEntity saved = healthRecordRepository.save(entity);
 
         return HealthRecordResponse.from(healthRecordMapper.toDomain(saved));
     }
@@ -105,7 +105,7 @@ public class PetServiceImpl implements PetService {
         PetEntity petEntity = petRepository.findById(petId)
             .orElseThrow(() -> new PetNotFoundException(petId));
 
-        List<HealthRecordMapper.HealthRecordEntity> records = healthRecordRepository.findByPetAndCheckDateAfter(petEntity, since);
+        List<HealthRecordEntity> records = healthRecordRepository.findByPetAndCheckDateAfter(petEntity, since);
 
         return records.stream()
             .map(healthRecordMapper::toDomain)
@@ -118,7 +118,7 @@ public class PetServiceImpl implements PetService {
         PetEntity petEntity = petRepository.findById(petId)
             .orElseThrow(() -> new PetNotFoundException(petId));
 
-        HealthRecordMapper.HealthRecordEntity record = healthRecordRepository.findById(recordId)
+        HealthRecordEntity record = healthRecordRepository.findById(recordId)
             .orElseThrow(() -> new IllegalArgumentException("건강 기록이 존재하지 않습니다."));
 
         if (!record.getPet().getId().equals(petEntity.getId())) {

@@ -1,10 +1,7 @@
 package uk.jinhy.server.api.pet.presentation;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import uk.jinhy.server.api.pet.domain.HealthRecord;
 import uk.jinhy.server.api.pet.domain.Pet;
 
@@ -86,6 +83,7 @@ public class PetDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @EqualsAndHashCode
     public static class HealthRecordResponse {
         private Long id;
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

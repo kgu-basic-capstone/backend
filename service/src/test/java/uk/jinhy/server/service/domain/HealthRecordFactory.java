@@ -42,8 +42,8 @@ public class HealthRecordFactory {
         return this;
     }
 
-    public HealthRecordMapper.HealthRecordEntity build() {
-        return HealthRecordMapper.HealthRecordEntity.builder()
+    public HealthRecordEntity build() {
+        return HealthRecordEntity.builder()
             .pet(this.pet)
             .checkDate(this.checkDate)
             .weight(this.weight)
