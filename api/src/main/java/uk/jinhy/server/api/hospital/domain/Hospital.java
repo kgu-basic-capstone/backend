@@ -1,4 +1,4 @@
-package uk.jinhy.server.api.domain;
+package uk.jinhy.server.api.hospital.domain;
 
 import lombok.Builder;
 import lombok.Getter;
