@@ -16,7 +16,7 @@ import uk.jinhy.server.service.user.domain.UserRepository;
 import uk.jinhy.server.api.pet.presentation.PetDto.HealthRecordResponse;
 import uk.jinhy.server.api.pet.presentation.PetDto.HealthRecordRequest;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -91,6 +91,7 @@ public class PetServiceImpl implements PetService {
             .pet(petEntity)
             .checkDate(request.getCheckDate())
             .weight(request.getWeight())
+            .category(request.getCategory())
             .notes(request.getNotes())
             .build();
 
@@ -101,11 +102,17 @@ public class PetServiceImpl implements PetService {
 
 
     @Override
-    public List<HealthRecordResponse> getHealthRecords(Long petId, LocalDateTime since) {
+    public List<HealthRecordResponse> getHealthRecords(Long petId, LocalDate since) {
         PetEntity petEntity = petRepository.findById(petId)
             .orElseThrow(() -> new PetNotFoundException(petId));
 
-        List<HealthRecordEntity> records = healthRecordRepository.findByPetAndCheckDateAfter(petEntity, since);
+        List<HealthRecordEntity> records;
+
+        if (since != null) {
+            records = healthRecordRepository.findByPetAndCheckDateAfter(petEntity, since);
+        } else {
+            records = healthRecordRepository.findByPet(petEntity);
+        }
 
         return records.stream()
             .map(healthRecordMapper::toDomain)

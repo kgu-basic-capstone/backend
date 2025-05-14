@@ -1,5 +1,6 @@
 package uk.jinhy.server.service.pet;
 
+import net.bytebuddy.asm.Advice;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.jinhy.server.api.domain.User;
@@ -27,6 +28,7 @@ import static java.time.LocalDateTime.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static uk.jinhy.server.api.pet.domain.HealthRecordCategories.*;
 
 class PetServiceImplTest {
     private PetRepository petRepository;
@@ -145,33 +147,38 @@ class PetServiceImplTest {
     void addHealthRecord_ShouldAddAndReturnHealthRecordResponse() {
         // Given
         Long petId = 1L;
+        LocalDate date = LocalDate.of(2023, 4, 10);
 
         HealthRecordRequest request = new HealthRecordRequest(
-            of(2023, 4, 10, 10, 0),
+            date,
             5.5,
+            CHECKUP,
             "정기 검진"
         );
 
         PetEntity petEntity = mock(PetEntity.class);
-        HealthRecordEntity savedEntity = mock(HealthRecordEntity.class);
 
-        // HealthRecord 도메인 객체 mock
-        HealthRecord domain = mock(HealthRecord.class);
-        when(domain.getCheckDate()).thenReturn(of(2023, 4, 10, 10, 0));
-        when(domain.getWeight()).thenReturn(5.5);
-        when(domain.getNotes()).thenReturn("정기 검진");
+        HealthRecordEntity savedEntity = HealthRecordEntity.builder()
+            .pet(petEntity)
+            .checkDate(date)
+            .weight(5.5)
+            .category(CHECKUP)
+            .notes("정기 검진")
+            .build();
 
-        // 리포지토리와 매퍼 동작 설정
+        HealthRecord domain = HealthRecord.builder()
+            .pet(null)
+            .checkDate(date)
+            .weight(5.5)
+            .category(CHECKUP)
+            .notes("정기 검진")
+            .build();
+
+        HealthRecordResponse expectedResponse = HealthRecordResponse.from(domain);
+
         when(petRepository.findById(petId)).thenReturn(Optional.of(petEntity));
         when(healthRecordRepository.save(any(HealthRecordEntity.class))).thenReturn(savedEntity);
         when(healthRecordMapper.toDomain(savedEntity)).thenReturn(domain);
-
-        // expectedResponse를 실제 객체로 생성
-        HealthRecordResponse expectedResponse = HealthRecordResponse.builder()
-            .checkDate(of(2023, 4, 10, 10, 0))
-            .weight(5.5)
-            .notes("정기 검진")
-            .build();
 
         // When
         HealthRecordResponse response = petService.addHealthRecord(petId, request);
@@ -186,36 +193,72 @@ class PetServiceImplTest {
 
 
     @Test
-    void getHealthRecords_ShouldReturnListOfResponses() {
+    void getHealthRecords_WithSince_ShouldReturnFilteredList() {
         // Given
         Long petId = 1L;
-        LocalDateTime since = of(2024, 1, 1, 0, 0);
+        LocalDate since = LocalDate.of(2024, 1, 1);
         PetEntity petEntity = mock(PetEntity.class);
         HealthRecordEntity recordEntity = mock(HealthRecordEntity.class);
         HealthRecord domain = mock(HealthRecord.class);
-
-        HealthRecordResponse expectedResponse = HealthRecordResponse.builder()
-            .checkDate(of(2024, 2, 1, 10, 0))
-            .weight(4.2)
-            .notes("예방접종")
-            .build();
 
         when(petRepository.findById(petId)).thenReturn(Optional.of(petEntity));
         when(healthRecordRepository.findByPetAndCheckDateAfter(petEntity, since))
             .thenReturn(List.of(recordEntity));
         when(healthRecordMapper.toDomain(recordEntity)).thenReturn(domain);
 
-        // domain 내부 getter mocking
-        when(domain.getCheckDate()).thenReturn(expectedResponse.getCheckDate());
-        when(domain.getWeight()).thenReturn(expectedResponse.getWeight());
-        when(domain.getNotes()).thenReturn(expectedResponse.getNotes());
+        HealthRecordResponse expected = HealthRecordResponse.builder()
+            .checkDate(LocalDate.of(2024, 2, 1))
+            .weight(4.2)
+            .category(DISEASE)
+            .notes("안구 질환 발견")
+            .build();
+
+        when(domain.getCheckDate()).thenReturn(expected.getCheckDate());
+        when(domain.getWeight()).thenReturn(expected.getWeight());
+        when(domain.getCategory()).thenReturn(expected.getCategory());
+        when(domain.getNotes()).thenReturn(expected.getNotes());
 
         // When
-        var result = petService.getHealthRecords(petId, since);
+        List<HealthRecordResponse> result = petService.getHealthRecords(petId, since);
 
         // Then
-        assertEquals(1, result.size());
-        assertEquals(expectedResponse, result.get(0));
+        assertThat(result)
+            .usingRecursiveComparison()
+            .isEqualTo(List.of(expected));
+    }
+
+    @Test
+    void getHealthRecords_WithoutSince_ShouldReturnAllRecords() {
+        // Given
+        Long petId = 1L;
+        PetEntity petEntity = mock(PetEntity.class);
+        HealthRecordEntity recordEntity = mock(HealthRecordEntity.class);
+        HealthRecord domain = mock(HealthRecord.class);
+
+        when(petRepository.findById(petId)).thenReturn(Optional.of(petEntity));
+        when(healthRecordRepository.findByPet(petEntity))
+            .thenReturn(List.of(recordEntity));
+        when(healthRecordMapper.toDomain(recordEntity)).thenReturn(domain);
+
+        HealthRecordResponse expected = HealthRecordResponse.builder()
+            .checkDate(LocalDate.of(2024, 2, 1))
+            .weight(4.2)
+            .category(DISEASE)
+            .notes("안구 질환 발견")
+            .build();
+
+        when(domain.getCheckDate()).thenReturn(expected.getCheckDate());
+        when(domain.getWeight()).thenReturn(expected.getWeight());
+        when(domain.getCategory()).thenReturn(expected.getCategory());
+        when(domain.getNotes()).thenReturn(expected.getNotes());
+
+        // When
+        List<HealthRecordResponse> result = petService.getHealthRecords(petId, null);
+
+        // Then
+        assertThat(result)
+            .usingRecursiveComparison()
+            .isEqualTo(List.of(expected));
     }
 
     @Test
@@ -223,6 +266,7 @@ class PetServiceImplTest {
         // Given
         Long petId = 1L;
         Long recordId = 10L;
+
         PetEntity petEntity = mock(PetEntity.class);
         HealthRecordEntity record = mock(HealthRecordEntity.class);
 
@@ -237,4 +281,5 @@ class PetServiceImplTest {
         // Then
         verify(healthRecordRepository).delete(record);
     }
+
 }

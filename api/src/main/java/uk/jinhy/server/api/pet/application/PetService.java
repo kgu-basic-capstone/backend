@@ -7,7 +7,7 @@ import uk.jinhy.server.api.pet.presentation.PetDto.PetListResponse;
 import uk.jinhy.server.api.pet.presentation.PetDto.HealthRecordResponse;
 import uk.jinhy.server.api.pet.presentation.PetDto.HealthRecordRequest;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface PetService {
@@ -16,7 +16,7 @@ public interface PetService {
     PetDetailResponse getPet(Long petId);
     void deletePet(Long petId);
     HealthRecordResponse addHealthRecord(Long petId, HealthRecordRequest request);
-    List<HealthRecordResponse> getHealthRecords(Long petId, LocalDateTime since);
+    List<HealthRecordResponse> getHealthRecords(Long petId, LocalDate since);
     void deleteHealthRecord(Long petId, Long recordId);
 
 }

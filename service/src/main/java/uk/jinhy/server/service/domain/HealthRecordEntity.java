@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import uk.jinhy.server.service.pet.domain.PetEntity;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -23,7 +23,7 @@ public class HealthRecordEntity {
     private PetEntity pet;
 
     @Column(nullable = false)
-    private LocalDateTime checkDate;
+    private LocalDate checkDate;
 
     @Column(nullable = false)
     private Double weight;
@@ -32,7 +32,7 @@ public class HealthRecordEntity {
     private String notes;
 
     @Builder
-    public HealthRecordEntity(PetEntity pet, LocalDateTime checkDate, Double weight, String notes) {
+    public HealthRecordEntity(PetEntity pet, LocalDate checkDate, Double weight, String notes) {
         this.pet = pet;
         this.checkDate = checkDate;
         this.weight = weight;

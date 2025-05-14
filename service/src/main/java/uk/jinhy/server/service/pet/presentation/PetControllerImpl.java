@@ -12,7 +12,7 @@ import uk.jinhy.server.api.pet.presentation.PetDto.PetCreateRequest;
 import uk.jinhy.server.api.pet.presentation.PetDto.PetDetailResponse;
 import uk.jinhy.server.api.pet.presentation.PetDto.PetListResponse;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -52,7 +52,7 @@ public class PetControllerImpl implements PetController {
     }
 
     @Override
-    public ResponseEntity<List<HealthRecordResponse>> getHealthRecords(Long petId, LocalDateTime since) {
+    public ResponseEntity<List<HealthRecordResponse>> getHealthRecords(Long petId, LocalDate since) {
         List<HealthRecordResponse> responses = petService.getHealthRecords(petId, since);
         return ResponseEntity.ok(responses);
     }

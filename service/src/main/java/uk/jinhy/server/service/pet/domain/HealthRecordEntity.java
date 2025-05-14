@@ -5,8 +5,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import uk.jinhy.server.service.pet.domain.PetEntity;
+import uk.jinhy.server.api.pet.domain.HealthRecordCategories;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,23 +24,24 @@ public class HealthRecordEntity {
     private PetEntity pet;
 
     @Column(nullable = false)
-    private LocalDateTime checkDate;
+    private LocalDate checkDate;
 
     @Column(nullable = false)
     private Double weight;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private HealthRecordCategories category;
 
     @Column(length = 1000)
     private String notes;
 
     @Builder
-    public HealthRecordEntity(PetEntity pet, LocalDateTime checkDate, Double weight, String notes) {
+    public HealthRecordEntity(PetEntity pet, LocalDate checkDate, Double weight, HealthRecordCategories category, String notes) {
         this.pet = pet;
         this.checkDate = checkDate;
         this.weight = weight;
+        this.category = category;
         this.notes = notes;
-    }
-
-    public void setPet(PetEntity pet) {
-        this.pet = pet;
     }
 }
