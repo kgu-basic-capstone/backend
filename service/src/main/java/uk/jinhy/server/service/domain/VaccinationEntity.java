@@ -55,8 +55,8 @@ public class VaccinationEntity {
         return nextVaccinationDate;
     }
 
-    public boolean setIsCompleted(boolean isCompleted) {
-        return isCompleted;
+    public void setIsCompleted(boolean completedStatus) {
+        this.isCompleted = completedStatus;
     }
 
     public void setVaccineName(String vaccineName) {
