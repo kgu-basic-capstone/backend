@@ -2,8 +2,7 @@ package uk.jinhy.server.service.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.context.annotation.Bean;
-import uk.jinhy.server.service.vaccination.presentation.VaccinationRepository;
+
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
