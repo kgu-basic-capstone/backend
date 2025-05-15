@@ -42,22 +42,24 @@ public class VaccinationService {
             throw new PetNotFoundException(petId);
         }
 
-        List<VaccinationEntity> vaccinations;
+        List<VaccinationEntity> filteredVaccinations = vaccinationRepository.findByPetId(petId);
 
-        if (completed != null && completed) {
-            // 완료된 백신만 조회
-            vaccinations = vaccinationRepository.findByPetIdAndIsCompleted(petId, true);
+        if (completed != null) {
+            filteredVaccinations = filteredVaccinations.stream()
+                .filter(v -> v.isCompleted() == completed) // VaccinationEntity의 isCompleted() 사용
+                .collect(Collectors.toList());
         }
+
         if (upcoming != null && upcoming) {
-            // 예정된 백신만 조회
-            vaccinations = vaccinationRepository.findByPetIdAndVaccinationDateAfter(petId, LocalDate.now());
-        } else {
-            // 모든 백신 조회
-            vaccinations = vaccinationRepository.findByPetId(petId);
+            filteredVaccinations = filteredVaccinations.stream()
+                .filter(v -> v.getNextVaccinationDate() != null &&
+                    v.getNextVaccinationDate().isAfter(LocalDate.now().minusDays(1)) && // 오늘 날짜도 포함하기 위해 minusDays(1) 사용 (또는 .now()로 변경하여 내일부터)
+                    !v.isCompleted()) // VaccinationEntity의 isCompleted() 사용
+                .collect(Collectors.toList());
         }
 
-        List<VaccinationDto.VaccinationResponse> vaccinationResponses = vaccinations.stream()
-            .map(VaccinationMapper.INSTANCE::fromEntity)
+        List<VaccinationDto.VaccinationResponse> vaccinationResponses = filteredVaccinations.stream()
+            .map(VaccinationMapper.INSTANCE::fromEntity) // VaccinationMapper가 올바르게 설정되어 있다고 가정
             .collect(Collectors.toList());
 
         return VaccinationDto.VaccinationListResponse.builder()
@@ -94,20 +96,23 @@ public class VaccinationService {
 
     // 특정 사용자의 모든 반려동물 백신 조회
     public VaccinationDto.VaccinationListResponse getVaccinationsByUserId(Long userId, Boolean completed, Boolean upcoming) {
+        List<VaccinationEntity> filteredVaccinations = vaccinationRepository.findByPetOwnerId(userId);
 
-
-        List<VaccinationEntity> vaccinations;
-
-        if (completed != null && completed) {
-            vaccinations = vaccinationRepository.findByPetOwnerIdAndIsCompleted(userId, true);
+        if (completed != null) {
+            filteredVaccinations = filteredVaccinations.stream()
+                .filter(v -> v.isCompleted() == completed)
+                .collect(Collectors.toList());
         }
+
         if (upcoming != null && upcoming) {
-            vaccinations = vaccinationRepository.findByPetOwnerIdAndVaccinationDateAfter(userId, LocalDate.now());
-        } else {
-            vaccinations = vaccinationRepository.findByPetOwnerId(userId);
+            filteredVaccinations = filteredVaccinations.stream()
+                .filter(v -> v.getNextVaccinationDate() != null &&
+                    v.getNextVaccinationDate().isAfter(LocalDate.now().minusDays(1)) &&
+                    !v.isCompleted())
+                .collect(Collectors.toList());
         }
 
-        List<VaccinationDto.VaccinationResponse> vaccinationResponses = vaccinations.stream()
+        List<VaccinationDto.VaccinationResponse> vaccinationResponses = filteredVaccinations.stream()
             .map(VaccinationMapper.INSTANCE::fromEntity)
             .collect(Collectors.toList());
 
