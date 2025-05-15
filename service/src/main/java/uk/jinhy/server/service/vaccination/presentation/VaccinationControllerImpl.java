@@ -37,5 +37,10 @@ public class VaccinationControllerImpl implements VaccinationController {
         VaccinationResponse response = vaccinationService.completeVaccination(petId, vaccinationId, completed);
         return ResponseEntity.ok(response);
     }
+    @Override
+    public ResponseEntity<VaccinationListResponse> getVaccinationsByUserId(Long userId, Boolean completed, Boolean upcoming) {
+        VaccinationListResponse response = vaccinationService.getVaccinationsByUserId(userId, completed, upcoming);
+        return ResponseEntity.ok(response);
+    }
 }
 
