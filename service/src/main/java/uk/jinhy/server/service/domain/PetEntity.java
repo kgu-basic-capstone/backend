@@ -2,6 +2,7 @@ package uk.jinhy.server.service.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import uk.jinhy.server.service.user.domain.UserEntity;
 
 
 import java.time.LocalDate;
