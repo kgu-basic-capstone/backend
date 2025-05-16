@@ -1,10 +1,7 @@
 package uk.jinhy.server.service.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 
@@ -17,6 +14,7 @@ public class VaccinationEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pet_id", nullable = false)
     private PetEntity pet;
@@ -29,8 +27,8 @@ public class VaccinationEntity {
 
     private LocalDate nextVaccinationDate;
 
-    @Column(nullable = false)
-    private Boolean isCompleted;
+    @Column(name = "is_completed", nullable = false)
+    private boolean isCompleted;
 
     @Builder
     public VaccinationEntity(PetEntity pet, String vaccineName,
@@ -42,5 +40,34 @@ public class VaccinationEntity {
         this.vaccinationDate = vaccinationDate;
         this.nextVaccinationDate = nextVaccinationDate;
         this.isCompleted = isCompleted;
+    }
+
+
+    public String getVaccineName() {
+        return vaccineName;
+    }
+
+    public LocalDate getVaccinationDate() {
+        return vaccinationDate;
+    }
+
+    public LocalDate getNextVaccinationDate() {
+        return nextVaccinationDate;
+    }
+
+    public void setIsCompleted(boolean completedStatus) {
+        this.isCompleted = completedStatus;
+    }
+
+    public void setVaccineName(String vaccineName) {
+        this.vaccineName = vaccineName;
+    }
+
+    public void setVaccinationDate(LocalDate vaccinationDate) {
+        this.vaccinationDate = vaccinationDate;
+    }
+
+    public void setNextVaccinationDate(LocalDate nextVaccinationDate) {
+        this.nextVaccinationDate = nextVaccinationDate;
     }
 }
