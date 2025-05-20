@@ -72,7 +72,7 @@ class PetServiceImplTest {
 
         // Then
         assertNotNull(response);
-        assertEquals("Bobby", response.getName());
+        assertThat(response.getName()).isEqualTo("Bobby");
     }
 
     @Test
@@ -98,8 +98,8 @@ class PetServiceImplTest {
 
         // Then
         assertNotNull(response);
-        assertEquals("Charlie", response.getName());
-        assertEquals("jinhy", response.getOwner().getUsername());
+        assertThat(response.getName()).isEqualTo("Charlie");
+        assertThat(response.getOwner().getUsername()).isEqualTo("jinhy");
     }
 
 
@@ -138,9 +138,9 @@ class PetServiceImplTest {
         var result = petService.getPets();
 
         // Then
-        assertEquals(1, result.getTotal());
-        assertEquals("Milo", result.getPets().get(0).getName());
-        assertEquals("minji", result.getPets().get(0).getOwner().getUsername());
+        assertThat(result.getTotal()).isEqualTo(1);
+        assertThat(result.getPets().get(0).getName()).isEqualTo("Milo");
+        assertThat(result.getPets().get(0).getOwner().getUsername()).isEqualTo("minji");
     }
 
     @Test
