@@ -2,6 +2,7 @@ package uk.jinhy.server.service.pet.application;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.jinhy.server.api.pet.application.PetService;
 import uk.jinhy.server.api.pet.domain.Pet;
 import uk.jinhy.server.api.pet.presentation.PetDto.PetCreateRequest;
@@ -31,6 +32,7 @@ public class PetServiceImpl implements PetService {
     private final PetMapper petMapper;
     private final UserMapper userMapper;
 
+    @Transactional
     @Override
     public PetDetailResponse createPet(PetCreateRequest request) {
         UserEntity ownerEntity = userRepository.findById(request.getUserId())
@@ -50,6 +52,7 @@ public class PetServiceImpl implements PetService {
         return PetDetailResponse.from(savedPet);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public PetListResponse getPets() {
         List<PetEntity> petEntities = petRepository.findAll();
@@ -64,6 +67,7 @@ public class PetServiceImpl implements PetService {
         return new PetListResponse(petResponses, petResponses.size());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public PetDetailResponse getPet(Long petId) {
         PetEntity petEntity = petRepository.findById(petId)
@@ -74,6 +78,7 @@ public class PetServiceImpl implements PetService {
         return PetDetailResponse.from(pet);
     }
 
+    @Transactional
     @Override
     public void deletePet(Long petId) {
         PetEntity petEntity = petRepository.findById(petId)
@@ -82,6 +87,7 @@ public class PetServiceImpl implements PetService {
         petRepository.delete(petEntity);
     }
 
+    @Transactional
     @Override
     public HealthRecordResponse addHealthRecord(Long petId, HealthRecordRequest request) {
         PetEntity petEntity = petRepository.findById(petId)
@@ -100,7 +106,7 @@ public class PetServiceImpl implements PetService {
         return HealthRecordResponse.from(healthRecordMapper.toDomain(saved));
     }
 
-
+    @Transactional(readOnly = true)
     @Override
     public List<HealthRecordResponse> getHealthRecords(Long petId, LocalDate since) {
         PetEntity petEntity = petRepository.findById(petId)
@@ -120,6 +126,7 @@ public class PetServiceImpl implements PetService {
             .collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public void deleteHealthRecord(Long petId, Long recordId) {
         PetEntity petEntity = petRepository.findById(petId)
