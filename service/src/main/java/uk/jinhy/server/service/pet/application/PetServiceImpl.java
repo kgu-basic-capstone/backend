@@ -112,18 +112,20 @@ public class PetServiceImpl implements PetService {
         PetEntity petEntity = petRepository.findById(petId)
             .orElseThrow(() -> new PetNotFoundException(petId));
 
-        List<HealthRecordEntity> records;
-
         if (since != null) {
-            records = healthRecordRepository.findByPetAndCheckDateAfter(petEntity, since);
-        } else {
-            records = healthRecordRepository.findByPet(petEntity);
+            List<HealthRecordEntity> records = healthRecordRepository.findByPetAndCheckDateAfter(petEntity, since);
+            return records.stream()
+                .map(healthRecordMapper::toDomain)
+                .map(HealthRecordResponse::from)
+                .collect(Collectors.toList());
         }
 
+        List<HealthRecordEntity> records = healthRecordRepository.findByPet(petEntity);
         return records.stream()
             .map(healthRecordMapper::toDomain)
             .map(HealthRecordResponse::from)
             .collect(Collectors.toList());
+
     }
 
     @Transactional
