@@ -1,9 +1,14 @@
-package uk.jinhy.server.service.domain;
+package uk.jinhy.server.service.pet.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
 import uk.jinhy.server.service.user.domain.UserEntity;
 
+
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -62,31 +67,6 @@ public class PetEntity {
     public List<VaccinationEntity> getVaccinationsAfter(LocalDateTime dateTime) {
         return this.vaccinations.stream()
             .filter(record -> record.getVaccinationDate().isAfter(dateTime.toLocalDate()))
-            .collect(Collectors.toList());
-    }
-
-
-    public HealthRecordEntity saveHealthRecord(HealthRecordEntity healthRecord) {
-        healthRecord.setPet(this);
-        this.healthRecords.add(healthRecord);
-        return healthRecord;
-    }
-
-    public HealthRecordEntity deleteHealthRecord(HealthRecordEntity healthRecord) {
-        this.healthRecords.remove(healthRecord);
-        return healthRecord;
-    }
-
-    public HealthRecordEntity updateHealthRecord(HealthRecordEntity originalRecord, HealthRecordEntity updatedRecord) {
-        this.healthRecords.remove(originalRecord);
-        updatedRecord.setPet(this);
-        this.healthRecords.add(updatedRecord);
-        return updatedRecord;
-    }
-
-    public List<HealthRecordEntity> getHealthRecordsAfter(LocalDateTime dateTime) {
-        return this.healthRecords.stream()
-            .filter(record -> record.getCheckDate().isAfter(dateTime))
             .collect(Collectors.toList());
     }
 }

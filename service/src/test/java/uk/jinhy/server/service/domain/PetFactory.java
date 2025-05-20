@@ -2,6 +2,8 @@ package uk.jinhy.server.service.domain;
 
 import uk.jinhy.server.service.user.domain.UserEntity;
 
+import uk.jinhy.server.service.pet.domain.PetEntity;
+
 import java.time.LocalDate;
 
 public class PetFactory {

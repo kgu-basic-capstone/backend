@@ -1,14 +1,14 @@
 package uk.jinhy.server.api.pet.presentation;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import uk.jinhy.server.api.pet.domain.HealthRecord;
+import uk.jinhy.server.api.pet.domain.HealthRecordCategories;
+import uk.jinhy.server.api.pet.domain.Pet;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PetDto {
 
@@ -19,6 +19,7 @@ public class PetDto {
     public static class PetCreateRequest {
         private String name;
         private LocalDate birthDate;
+        private Long UserId;
     }
 
     @Getter
@@ -41,6 +42,26 @@ public class PetDto {
             private String username;
             private String email;
         }
+
+        public static PetDetailResponse from(Pet pet) {
+            return PetDetailResponse.builder()
+                .id(pet.getId())
+                .name(pet.getName())
+                .birthDate(pet.getBirthDate())
+                .owner(
+                    OwnerInfo.builder()
+                        .id(pet.getOwner().getId())
+                        .username(pet.getOwner().getUsername())
+                        .email(null)
+                        .build()
+                )
+                .healthRecords(
+                    pet.getHealthRecords().stream()
+                        .map(HealthRecordResponse::from)
+                        .collect(Collectors.toList())
+                )
+                .build();
+        }
     }
 
     @Getter
@@ -57,9 +78,10 @@ public class PetDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class HealthRecordRequest {
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        private LocalDateTime checkDate;
+        @JsonFormat(pattern = "yyyy-MM-dd")
+        private LocalDate checkDate;
         private Double weight;
+        private HealthRecordCategories category;
         private String notes;
     }
 
@@ -67,11 +89,23 @@ public class PetDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @EqualsAndHashCode
     public static class HealthRecordResponse {
         private Long id;
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        private LocalDateTime checkDate;
+        @JsonFormat(pattern = "yyyy-MM-dd")
+        private LocalDate checkDate;
         private Double weight;
+        private HealthRecordCategories category;
         private String notes;
+
+        public static HealthRecordResponse from(HealthRecord healthRecord) {
+            HealthRecordResponse response = new HealthRecordResponse();
+            response.checkDate = healthRecord.getCheckDate();
+            response.weight = healthRecord.getWeight();
+            response.category = healthRecord.getCategory();
+            response.notes = healthRecord.getNotes();
+            return response;
+        }
+
     }
 }

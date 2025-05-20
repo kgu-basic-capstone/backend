@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import uk.jinhy.server.service.user.domain.UserEntity;
+import uk.jinhy.server.service.pet.domain.PetEntity;
 
 import java.time.LocalDateTime;
 
