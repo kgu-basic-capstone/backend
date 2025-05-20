@@ -62,7 +62,7 @@ public class PetServiceImpl implements PetService {
                 Pet pet = petMapper.toDomain(petEntity);
                 return PetDetailResponse.from(pet);
             })
-            .collect(Collectors.toList());
+            .collect(Collectors.toUnmodifiableList());
 
         return new PetListResponse(petResponses, petResponses.size());
     }
