@@ -1,7 +1,9 @@
 package uk.jinhy.server.service.vaccination.presentation;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import uk.jinhy.server.api.vaccination.presentation.VaccinationController;
 import uk.jinhy.server.api.vaccination.presentation.VaccinationDto.VaccinationRequest;
@@ -41,6 +43,24 @@ public class VaccinationControllerImpl implements VaccinationController {
     public ResponseEntity<VaccinationListResponse> getVaccinationsByUserId(Long userId, Boolean completed, Boolean upcoming) {
         VaccinationListResponse response = vaccinationService.getVaccinationsByUserId(userId, completed, upcoming);
         return ResponseEntity.ok(response);
+    }
+
+    @ExceptionHandler(PetNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handlePetNotFoundException(PetNotFoundException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.NOT_FOUND.value(),
+            ex.getMessage()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            "예상치 못한 오류가 발생했습니다: " + ex.getMessage()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
 

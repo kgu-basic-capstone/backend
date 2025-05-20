@@ -1,4 +1,5 @@
 package uk.jinhy.server.service;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,17 +9,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import uk.jinhy.server.api.vaccination.presentation.VaccinationDto;
 import uk.jinhy.server.service.common.IntegrationTest;
-import uk.jinhy.server.service.domain.UserEntity;
 import uk.jinhy.server.service.domain.PetEntity;
 import uk.jinhy.server.service.domain.VaccinationEntity;
 import uk.jinhy.server.service.pet.presentation.PetRepository;
-import uk.jinhy.server.service.user.presentation.UserRepository;
+import uk.jinhy.server.service.user.domain.UserEntity;
+import uk.jinhy.server.service.user.domain.UserRepository;
 import uk.jinhy.server.service.vaccination.presentation.PetNotFoundException;
 import uk.jinhy.server.service.vaccination.presentation.VaccinationRepository;
 import uk.jinhy.server.service.vaccination.presentation.VaccinationService;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -49,9 +49,7 @@ class VaccinationServiceTest extends IntegrationTest {
         petRepository.deleteAll();
         userRepository.deleteAll();
 
-        // 테스트용 소유자(UserEntity) 생성 및 저장
         testOwner = UserEntity.builder()
-            .email("owner_" + System.nanoTime() + "@test.com")
             .username("TestOwner")
             .build();
         userRepository.save(testOwner);
@@ -75,7 +73,6 @@ class VaccinationServiceTest extends IntegrationTest {
         return vaccinationRepository.save(vaccination);
     }
 
-    // --- addVaccination Tests ---
     @Test
     @DisplayName("백신 기록 추가 성공")
     void addVaccination_success() {
@@ -102,7 +99,6 @@ class VaccinationServiceTest extends IntegrationTest {
             .hasMessageContaining("Pet not found with id: " + nonExistentPetId);
     }
 
-    // --- getVaccinations (by petId) Tests ---
     @Test
     @DisplayName("petId로 백신 목록 조회 - 데이터 없음")
     void getVaccinations_byPetId_empty() {
@@ -131,7 +127,6 @@ class VaccinationServiceTest extends IntegrationTest {
         assertThat(response.getVaccinations().get(0).getVaccineName()).isEqualTo("V2_Upcoming");
     }
 
-    // --- getVaccinationsByUserId Tests ---
     @Test
     @DisplayName("userId로 백신 목록 조회 - 여러 반려동물, 여러 백신")
     void getVaccinationsByUserId_multiplePetsAndVaccinations() {
@@ -153,7 +148,6 @@ class VaccinationServiceTest extends IntegrationTest {
         response.getVaccinations().forEach(v -> assertThat(v.isCompleted()).isFalse());
     }
 
-    // --- deleteVaccination Tests ---
     @Test
     @DisplayName("백신 기록 삭제 성공")
     void deleteVaccination_success() {
@@ -162,7 +156,6 @@ class VaccinationServiceTest extends IntegrationTest {
         assertThat(vaccinationRepository.findById(v.getId())).isEmpty();
     }
 
-    // --- completeVaccination Tests ---
     @Test
     @DisplayName("백신 완료 상태 변경 성공")
     void completeVaccination_success() {
