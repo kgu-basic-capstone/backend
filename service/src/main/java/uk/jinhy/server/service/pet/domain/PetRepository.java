@@ -2,7 +2,7 @@ package uk.jinhy.server.service.pet.domain;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import uk.jinhy.server.api.pet.domain.Pet;
-import uk.jinhy.server.api.domain.User;
+import uk.jinhy.server.api.user.domain.User;
 
 import java.util.List;
 

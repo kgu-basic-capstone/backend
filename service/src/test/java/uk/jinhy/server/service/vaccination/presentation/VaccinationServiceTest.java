@@ -6,8 +6,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.jinhy.server.api.vaccination.presentation.VaccinationDto;
-import uk.jinhy.server.service.domain.PetEntity;
-import uk.jinhy.server.service.pet.presentation.PetRepository;
+import uk.jinhy.server.service.pet.domain.PetEntity;
+import uk.jinhy.server.service.pet.domain.PetRepository;
 
 import java.time.LocalDate;
 import java.util.Optional;

@@ -2,6 +2,7 @@ package uk.jinhy.server.service.pet.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import uk.jinhy.server.service.domain.VaccinationEntity;
 import uk.jinhy.server.service.user.domain.UserEntity;
 
 

@@ -1,11 +1,10 @@
 package uk.jinhy.server.service.user.domain;
 
 import org.mapstruct.Mapper;
-import uk.jinhy.server.api.domain.User;
-import uk.jinhy.server.service.domain.UserEntity;
+import uk.jinhy.server.api.user.domain.User;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
     UserEntity toEntity(User user);
-    User toDomain(UserEntity userEntity);
+    uk.jinhy.server.api.user.domain.User toDomain(UserEntity userEntity);
 }
