@@ -2,7 +2,7 @@ package uk.jinhy.server.service.user.domain;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.jinhy.server.service.domain.PetEntity;
+import uk.jinhy.server.service.pet.domain.PetEntity;
 
 import java.util.List;
 

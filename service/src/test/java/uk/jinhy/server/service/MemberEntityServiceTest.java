@@ -9,9 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import uk.jinhy.server.api.vaccination.presentation.VaccinationDto;
 import uk.jinhy.server.service.common.IntegrationTest;
-import uk.jinhy.server.service.domain.PetEntity;
 import uk.jinhy.server.service.domain.VaccinationEntity;
-import uk.jinhy.server.service.pet.presentation.PetRepository;
+import uk.jinhy.server.service.pet.domain.PetEntity;
+import uk.jinhy.server.service.pet.domain.PetRepository;
 import uk.jinhy.server.service.user.domain.UserEntity;
 import uk.jinhy.server.service.user.domain.UserRepository;
 import uk.jinhy.server.service.vaccination.presentation.PetNotFoundException;

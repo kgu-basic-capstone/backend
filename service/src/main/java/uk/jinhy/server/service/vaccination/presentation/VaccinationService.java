@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.jinhy.server.api.vaccination.presentation.VaccinationDto;
-import uk.jinhy.server.service.domain.PetEntity;
 import uk.jinhy.server.service.domain.VaccinationEntity;
-import uk.jinhy.server.service.pet.presentation.PetRepository;
+import uk.jinhy.server.service.pet.domain.PetEntity;
+import uk.jinhy.server.service.pet.domain.PetRepository;
 
 import java.time.LocalDate;
 import java.util.List;
