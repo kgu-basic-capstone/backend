@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import uk.jinhy.server.api.user.presentation.dto.response.AuthenticatedUserInfoResponseDto;
+import uk.jinhy.server.api.user.domain.User;
 
 @Tag(name = "User", description = "회원 관리 API")
 public interface UserController {
@@ -18,6 +19,6 @@ public interface UserController {
         }
     )
     @GetMapping("/api/users/me")
-    ResponseEntity<AuthenticatedUserInfoResponseDto> getAuthUserInfo(String oauth2UserId);
+    ResponseEntity<AuthenticatedUserInfoResponseDto> getAuthUserInfo(User user);
 
 }

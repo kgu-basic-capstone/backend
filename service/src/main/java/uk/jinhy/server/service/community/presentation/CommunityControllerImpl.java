@@ -13,6 +13,8 @@ import uk.jinhy.server.api.community.presentation.dto.request.CommunityPostReque
 import uk.jinhy.server.api.community.presentation.dto.response.CommunityCommentResponseDto;
 import uk.jinhy.server.api.community.presentation.dto.response.CommunityPostDetailResponseDto;
 import uk.jinhy.server.api.community.presentation.dto.response.CommunityPostListResponseDto;
+import uk.jinhy.server.api.user.application.CurrentUser;
+import uk.jinhy.server.api.user.domain.User;
 import uk.jinhy.server.service.community.domain.CommunityMapper;
 
 import java.util.List;
@@ -38,48 +40,42 @@ public class CommunityControllerImpl implements CommunityController {
     }
 
     @Override
-    public ResponseEntity<CommunityPostDetailResponseDto> createPost(CommunityPostRequestDto request) {
-        Long userId = getCurrentUserId();
-        CommunityPost post = communityService.createPost(communityMapper.toCreatePostDto(request), userId);
+    public ResponseEntity<CommunityPostDetailResponseDto> createPost(CommunityPostRequestDto request, @CurrentUser User user) {
+        CommunityPost post = communityService.createPost(communityMapper.toCreatePostDto(request), user);
         CommunityPostDetailResponseDto response = communityMapper.toPostDetailResponse(post);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Override
-    public ResponseEntity<CommunityPostDetailResponseDto> updatePost(Long postId, CommunityPostRequestDto request, Long userId) {
-        CommunityPost post = communityService.updatePost(postId, communityMapper.toUpdatePostDto(request), userId);
+    public ResponseEntity<CommunityPostDetailResponseDto> updatePost(Long postId, CommunityPostRequestDto request, @CurrentUser User user) {
+        CommunityPost post = communityService.updatePost(postId, communityMapper.toUpdatePostDto(request), user);
         CommunityPostDetailResponseDto response = communityMapper.toPostDetailResponse(post);
         return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<Void> deletePost(Long postId, Long userId) {
-        communityService.deletePost(postId, userId);
+    public ResponseEntity<Void> deletePost(Long postId, @CurrentUser User user) {
+        communityService.deletePost(postId, user);
         return ResponseEntity.noContent().build();
     }
 
     @Override
-    public ResponseEntity<CommunityCommentResponseDto> addComment(Long postId, CommunityCommentRequestDto request) {
-        Long userId = getCurrentUserId();
-        CommunityComment comment = communityService.addComment(postId, communityMapper.toAddCommentDto(request), userId);
+    public ResponseEntity<CommunityCommentResponseDto> addComment(Long postId, CommunityCommentRequestDto request, @CurrentUser User user) {
+        CommunityComment comment = communityService.addComment(postId, communityMapper.toAddCommentDto(request), user);
         CommunityCommentResponseDto response = communityMapper.toCommentResponse(comment);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Override
-    public ResponseEntity<CommunityCommentResponseDto> updateComment(Long commentId, CommunityCommentRequestDto request, Long userId) {
-        CommunityComment comment = communityService.updateComment(commentId, communityMapper.toUpdateCommentDto(request), userId);
+    public ResponseEntity<CommunityCommentResponseDto> updateComment(Long commentId, CommunityCommentRequestDto request, @CurrentUser User user) {
+        CommunityComment comment = communityService.updateComment(commentId, communityMapper.toUpdateCommentDto(request), user);
         CommunityCommentResponseDto response = communityMapper.toCommentResponse(comment);
         return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<Void> deleteComment(Long commentId, Long userId) {
-        communityService.deleteComment(commentId, userId);
+    public ResponseEntity<Void> deleteComment(Long commentId, @CurrentUser User user) {
+        communityService.deleteComment(commentId, user);
         return ResponseEntity.noContent().build();
-    }
-
-    private Long getCurrentUserId() {
-        return 1L;
     }
 }
