@@ -1,6 +1,5 @@
 package uk.jinhy.server.api.pet.application;
 
-import uk.jinhy.server.api.pet.presentation.PetDto;
 import uk.jinhy.server.api.pet.presentation.PetDto.PetCreateRequest;
 import uk.jinhy.server.api.pet.presentation.PetDto.PetDetailResponse;
 import uk.jinhy.server.api.pet.presentation.PetDto.PetListResponse;
