@@ -8,6 +8,5 @@ import java.io.IOException;
 
 public interface DiseaseImageService {
     DiseaseImageResponseDto requestImageAnalysis(DiseaseImageRequestDto requestDto) throws IOException;
-
     DiseaseImageResultResponseDto getImageAnalysisResult(String taskId);
-} 
+}
