@@ -16,7 +16,7 @@ public interface HospitalService {
 
     HospitalReservationListResponse getUserReservations(Long userId, String status);
 
-    HospitalReservationResponse updateReservationStatus(Long reservationId);
+    HospitalReservationResponse updateReservationStatus(Long reservationId, String status);
 
     void cancelReservation(Long reservationId);
 }
