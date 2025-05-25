@@ -18,9 +18,9 @@ public interface HospitalRepository extends JpaRepository<HospitalEntity, Long> 
         "(6371 * acos(cos(radians(:lat)) * cos(radians(h.latitude)) * cos(radians(h.longitude) - radians(:lon)) + sin(radians(:lat)) * sin(radians(h.latitude)))) <= :radius)",
         nativeQuery = true)
     Page<HospitalEntity> findByFilters(
-        @Param("surgeryAvailable") Boolean surgeryAvailable,
         @Param("lat") Double latitude,
         @Param("lon") Double longitude,
         @Param("radius") Double radius,
+        @Param("surgeryAvailable") Boolean surgeryAvailable,
         Pageable pageable);
 }

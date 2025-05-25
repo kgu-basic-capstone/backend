@@ -2,8 +2,8 @@ package uk.jinhy.server.service.hospital.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import uk.jinhy.server.api.domain.Pet;
-import uk.jinhy.server.api.domain.User;
+import uk.jinhy.server.service.user.domain.UserEntity;
+import uk.jinhy.server.service.pet.domain.PetEntity;
 
 import java.time.LocalDateTime;
 
@@ -23,12 +23,12 @@ public class HospitalReservationEntity {
     // 예약한 사용자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private UserEntity user;
 
     // 예약한 반려동물
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pet_id", nullable = false)
-    private Pet pet;
+    private PetEntity pet;
 
     // 예약 대상 병원
     @ManyToOne(fetch = FetchType.LAZY)

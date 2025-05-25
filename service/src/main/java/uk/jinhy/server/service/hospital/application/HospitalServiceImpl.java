@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.jinhy.server.api.domain.Pet;
 import uk.jinhy.server.api.hospital.domain.exception.HospitalNotFoundException;
 import uk.jinhy.server.api.hospital.domain.exception.InvalidReservationStatusException;
 import uk.jinhy.server.api.hospital.domain.exception.PetNotFoundException;
@@ -17,12 +16,12 @@ import uk.jinhy.server.api.hospital.presentation.HospitalDto.HospitalReservation
 import uk.jinhy.server.api.hospital.presentation.HospitalDto.HospitalReservationResponse;
 import uk.jinhy.server.api.hospital.application.HospitalService;
 import uk.jinhy.server.service.hospital.domain.*;
-import uk.jinhy.server.service.pet.PetService;
+import uk.jinhy.server.service.pet.domain.PetEntity;
 import uk.jinhy.server.service.pet.domain.PetRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.NoSuchElementException;
+
 
 @Service
 @RequiredArgsConstructor
@@ -32,13 +31,12 @@ public class HospitalServiceImpl implements HospitalService {
     private final HospitalRepository hospitalRepository;
     private final ReservationRepository reservationRepository;
     private final PetRepository petRepository;
-    private final PetService petService;
     private final HospitalMapper hospitalMapper;
 
     @Override
     public HospitalListResponse getHospitals(Double latitude, Double longitude, Double radius, Boolean surgeryAvailable, int page, int size) {
         Page<HospitalEntity> hospitals = hospitalRepository.findByFilters(
-            surgeryAvailable, latitude, longitude, radius,
+            latitude, longitude, radius, surgeryAvailable,
             PageRequest.of(page, size));
 
         // Mapper 사용으로 변경
@@ -59,7 +57,6 @@ public class HospitalServiceImpl implements HospitalService {
         HospitalEntity hospital = hospitalRepository.findById(hospitalId)
             .orElseThrow(() -> new HospitalNotFoundException("병원을 찾을 수 없습니다. ID: " + hospitalId));
 
-        // Mapper 사용으로 변경
         return hospitalMapper.toDetailResponse(hospital);
     }
 
@@ -69,11 +66,11 @@ public class HospitalServiceImpl implements HospitalService {
         HospitalEntity hospital = hospitalRepository.findById(hospitalId)
             .orElseThrow(() -> new HospitalNotFoundException("병원을 찾을 수 없습니다. ID: " + hospitalId));
 
-        Pet pet = petRepository.findById(request.getPetId())
+        PetEntity petEntity = petRepository.findById(request.getPetId())
             .orElseThrow(() -> new PetNotFoundException("반려동물을 찾을 수 없습니다. ID: " + request.getPetId()));
 
         HospitalReservationEntity reservation = HospitalReservationEntity.builder()
-            .pet(pet)
+            .pet(petEntity)
             .hospitalEntity(hospital)
             .reservationDateTime(request.getReservationDateTime())
             .status(HospitalReservationEntity.ReservationStatus.PENDING)
@@ -81,7 +78,6 @@ public class HospitalServiceImpl implements HospitalService {
 
         HospitalReservationEntity savedReservation = reservationRepository.save(reservation);
 
-        // Mapper 사용으로 변경
         return hospitalMapper.toReservationResponse(savedReservation);
     }
 
@@ -95,7 +91,6 @@ public class HospitalServiceImpl implements HospitalService {
             reservations = reservationRepository.findByUserIdOrderByReservationDateTimeDesc(userId);
         }
 
-        // Mapper 사용으로 변경
         List<HospitalReservationResponse> reservationResponses = reservations.stream()
             .map(hospitalMapper::toReservationResponse)
             .collect(Collectors.toList());
@@ -123,7 +118,6 @@ public class HospitalServiceImpl implements HospitalService {
         reservation.changeStatus(reservationStatus);
         HospitalReservationEntity updatedReservation = reservationRepository.save(reservation);
 
-        // Mapper 사용으로 변경
         return hospitalMapper.toReservationResponse(updatedReservation);
     }
 
