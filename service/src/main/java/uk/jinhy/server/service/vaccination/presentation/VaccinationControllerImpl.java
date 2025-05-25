@@ -3,102 +3,64 @@ package uk.jinhy.server.service.vaccination.presentation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import uk.jinhy.server.api.vaccination.presentation.VaccinationController;
 import uk.jinhy.server.api.vaccination.presentation.VaccinationDto.VaccinationRequest;
 import uk.jinhy.server.api.vaccination.presentation.VaccinationDto.VaccinationResponse;
 import uk.jinhy.server.api.vaccination.presentation.VaccinationDto.VaccinationListResponse;
 
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 @RestController
 @RequiredArgsConstructor
 public class VaccinationControllerImpl implements VaccinationController {
 
+    private final VaccinationService vaccinationService;
+
     @Override
     public ResponseEntity<VaccinationResponse> addVaccination(Long petId, VaccinationRequest request) {
-        VaccinationResponse mockResponse = VaccinationResponse.builder()
-            .id(1L)
-            .petId(petId)
-            .vaccineName(request.getVaccineName())
-            .vaccinationDate(request.getVaccinationDate())
-            .nextVaccinationDate(request.getNextVaccinationDate())
-            .isCompleted(false)
-            .build();
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(mockResponse);
+        VaccinationResponse response = vaccinationService.addVaccination(petId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Override
-    public ResponseEntity<VaccinationListResponse> getVaccinations(Long petId, Boolean completed) {
-        List<VaccinationResponse> mockVaccinations = Arrays.asList(
-            VaccinationResponse.builder()
-                .id(1L)
-                .petId(petId)
-                .vaccineName("종합백신 1차")
-                .vaccinationDate(LocalDate.now().minusMonths(6))
-                .nextVaccinationDate(LocalDate.now().minusMonths(5))
-                .isCompleted(true)
-                .build(),
-            VaccinationResponse.builder()
-                .id(2L)
-                .petId(petId)
-                .vaccineName("종합백신 2차")
-                .vaccinationDate(LocalDate.now().minusMonths(5))
-                .nextVaccinationDate(LocalDate.now().minusMonths(4))
-                .isCompleted(true)
-                .build(),
-            VaccinationResponse.builder()
-                .id(3L)
-                .petId(petId)
-                .vaccineName("광견병 예방접종")
-                .vaccinationDate(LocalDate.now().minusMonths(3))
-                .nextVaccinationDate(LocalDate.now().plusMonths(9))
-                .isCompleted(true)
-                .build(),
-            VaccinationResponse.builder()
-                .id(4L)
-                .petId(petId)
-                .vaccineName("종합백신 3차")
-                .vaccinationDate(LocalDate.now().plusMonths(1))
-                .nextVaccinationDate(null)
-                .isCompleted(false)
-                .build()
-        );
-
-        if (completed != null) {
-            mockVaccinations = mockVaccinations.stream()
-                .filter(vaccination -> vaccination.isCompleted() == completed)
-                .collect(Collectors.toList());
-        }
-
-        VaccinationListResponse response = VaccinationListResponse.builder()
-            .vaccinations(mockVaccinations)
-            .total(mockVaccinations.size())
-            .build();
-
+    public ResponseEntity<VaccinationListResponse> getVaccinations(Long petId, Boolean completed, Boolean upcoming) {
+        VaccinationListResponse response = vaccinationService.getVaccinations(petId, completed, upcoming);
         return ResponseEntity.ok(response);
     }
 
     @Override
     public ResponseEntity<Void> deleteVaccination(Long petId, Long vaccinationId) {
+        vaccinationService.deleteVaccination(petId, vaccinationId);
         return ResponseEntity.noContent().build();
     }
 
     @Override
     public ResponseEntity<VaccinationResponse> completeVaccination(Long petId, Long vaccinationId, boolean completed) {
-        VaccinationResponse mockResponse = VaccinationResponse.builder()
-            .id(vaccinationId)
-            .petId(petId)
-            .vaccineName("종합백신 3차")
-            .vaccinationDate(LocalDate.now())
-            .nextVaccinationDate(LocalDate.now().plusMonths(12))
-            .isCompleted(completed)
-            .build();
+        VaccinationResponse response = vaccinationService.completeVaccination(petId, vaccinationId, completed);
+        return ResponseEntity.ok(response);
+    }
+    @Override
+    public ResponseEntity<VaccinationListResponse> getVaccinationsByUserId(Long userId, Boolean completed, Boolean upcoming) {
+        VaccinationListResponse response = vaccinationService.getVaccinationsByUserId(userId, completed, upcoming);
+        return ResponseEntity.ok(response);
+    }
 
-        return ResponseEntity.ok(mockResponse);
+    @ExceptionHandler(PetNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handlePetNotFoundException(PetNotFoundException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.NOT_FOUND.value(),
+            ex.getMessage()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            "예상치 못한 오류가 발생했습니다: " + ex.getMessage()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
+

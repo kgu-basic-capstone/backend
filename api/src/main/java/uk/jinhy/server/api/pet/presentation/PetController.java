@@ -12,7 +12,7 @@ import uk.jinhy.server.api.pet.presentation.PetDto.PetCreateRequest;
 import uk.jinhy.server.api.pet.presentation.PetDto.PetDetailResponse;
 import uk.jinhy.server.api.pet.presentation.PetDto.PetListResponse;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "Pet", description = "반려동물 관리 API")
@@ -98,7 +98,7 @@ public interface PetController {
     @GetMapping("/api/pets/{petId}/health-records")
     ResponseEntity<List<HealthRecordResponse>> getHealthRecords(
         @Parameter(description = "반려동물 ID") @PathVariable Long petId,
-        @Parameter(description = "특정 날짜 이후 기록만 조회") @RequestParam(required = false) LocalDateTime since
+        @Parameter(description = "특정 날짜 이후 기록만 조회") @RequestParam(required = false) LocalDate since
     );
 
     @Operation(

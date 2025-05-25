@@ -13,7 +13,7 @@ public class ApiResponse<T> {
         this.status = status;
         this.message = message;
         this.data = data;
-        }
+    }
 
     public static <T> ApiResponse<T> of(HttpStatus status, String message, T data) {
         return new ApiResponse<>(status, message, data);
