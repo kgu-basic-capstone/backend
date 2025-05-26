@@ -9,13 +9,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import uk.jinhy.server.api.vaccination.presentation.VaccinationDto;
 import uk.jinhy.server.service.common.IntegrationTest;
-import uk.jinhy.server.service.domain.VaccinationEntity;
+import uk.jinhy.server.service.pet.exception.PetNotFoundException;
+import uk.jinhy.server.service.vaccination.presentation.domain.VaccinationEntity;
 import uk.jinhy.server.service.pet.domain.PetEntity;
 import uk.jinhy.server.service.pet.domain.PetRepository;
 import uk.jinhy.server.service.user.domain.UserEntity;
 import uk.jinhy.server.service.user.domain.UserRepository;
-import uk.jinhy.server.service.vaccination.presentation.PetNotFoundException;
-import uk.jinhy.server.service.vaccination.presentation.VaccinationRepository;
+import uk.jinhy.server.service.vaccination.presentation.domain.VaccinationRepository;
 import uk.jinhy.server.service.vaccination.presentation.VaccinationService;
 
 import java.time.LocalDate;
@@ -93,9 +93,8 @@ class VaccinationServiceTest extends IntegrationTest {
     void addVaccination_fail_petNotFound() {
         Long nonExistentPetId = 9999L;
         VaccinationDto.VaccinationRequest request = VaccinationDto.VaccinationRequest.builder().vaccineName("Test").vaccinationDate(LocalDate.now()).build();
-        // 서비스의 addVaccination은 PetNotFoundException을 던지도록 수정되었다고 가정 (또는 RuntimeException)
         assertThatThrownBy(() -> vaccinationService.addVaccination(nonExistentPetId, request))
-            .isInstanceOf(PetNotFoundException.class) // PetNotFoundException으로 변경되었는지 확인
+            .isInstanceOf(PetNotFoundException.class)
             .hasMessageContaining("Pet not found with id: " + nonExistentPetId);
     }
 
