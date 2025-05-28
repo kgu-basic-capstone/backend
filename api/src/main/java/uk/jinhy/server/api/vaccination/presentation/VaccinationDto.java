@@ -1,15 +1,12 @@
 package uk.jinhy.server.api.vaccination.presentation;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
-public class VaccinationDto {
 
+public class VaccinationDto {
     @Getter
     @Builder
     @NoArgsConstructor
@@ -18,6 +15,7 @@ public class VaccinationDto {
         private String vaccineName;
         private LocalDate vaccinationDate;
         private LocalDate nextVaccinationDate;
+        private VaccinationStatusType statusType;
     }
 
     @Getter
@@ -31,6 +29,7 @@ public class VaccinationDto {
         private LocalDate vaccinationDate;
         private LocalDate nextVaccinationDate;
         private boolean isCompleted;
+        private VaccinationStatusType statusType;
     }
 
     @Getter
