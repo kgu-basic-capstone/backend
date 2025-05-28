@@ -11,6 +11,8 @@ import uk.jinhy.server.api.community.presentation.dto.request.CommunityPostReque
 import uk.jinhy.server.api.community.presentation.dto.response.CommunityCommentResponseDto;
 import uk.jinhy.server.api.community.presentation.dto.response.CommunityPostDetailResponseDto;
 import uk.jinhy.server.api.community.presentation.dto.response.CommunityPostListResponseDto;
+import uk.jinhy.server.api.user.application.CurrentUser;
+import uk.jinhy.server.api.user.domain.User;
 
 @Tag(name = "Community", description = "커뮤니티 API")
 public interface CommunityController {
@@ -55,7 +57,8 @@ public interface CommunityController {
     )
     @PostMapping("/api/community/posts")
     ResponseEntity<CommunityPostDetailResponseDto> createPost(
-        @RequestBody CommunityPostRequestDto request
+        @RequestBody CommunityPostRequestDto request,
+        @CurrentUser User user
     );
 
     @Operation(
@@ -73,7 +76,7 @@ public interface CommunityController {
     ResponseEntity<CommunityPostDetailResponseDto> updatePost(
         @Parameter(description = "게시글 ID") @PathVariable Long postId,
         @RequestBody CommunityPostRequestDto request,
-        @Parameter(description = "유저 ID") @RequestParam("userId") Long userId
+        @CurrentUser User user
     );
 
     @Operation(
@@ -89,7 +92,7 @@ public interface CommunityController {
     @DeleteMapping("/api/community/posts/{postId}")
     ResponseEntity<Void> deletePost(
         @Parameter(description = "게시글 ID") @PathVariable Long postId,
-        @Parameter(description = "유저 ID") @RequestParam("userId") Long userId
+        @CurrentUser User user
     );
 
     @Operation(
@@ -105,7 +108,8 @@ public interface CommunityController {
     @PostMapping("/api/community/posts/{postId}/comments")
     ResponseEntity<CommunityCommentResponseDto> addComment(
         @Parameter(description = "게시글 ID") @PathVariable Long postId,
-        @RequestBody CommunityCommentRequestDto request
+        @RequestBody CommunityCommentRequestDto request,
+        @CurrentUser User user
     );
 
     @Operation(
@@ -123,7 +127,7 @@ public interface CommunityController {
     ResponseEntity<CommunityCommentResponseDto> updateComment(
         @Parameter(description = "댓글 ID") @PathVariable Long commentId,
         @RequestBody CommunityCommentRequestDto request,
-        @Parameter(description = "유저 ID") @RequestParam("userId") Long userId
+        @CurrentUser User user
     );
 
     @Operation(
@@ -139,6 +143,6 @@ public interface CommunityController {
     @DeleteMapping("/api/community/comments/{commentId}")
     ResponseEntity<Void> deleteComment(
         @Parameter(description = "댓글 ID") @PathVariable Long commentId,
-        @Parameter(description = "유저 ID") @RequestParam("userId") Long userId
+        @CurrentUser User user
     );
 }

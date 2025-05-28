@@ -1,4 +1,4 @@
-package uk.jinhy.server.service;
+package uk.jinhy.server.service.vaccination.application;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

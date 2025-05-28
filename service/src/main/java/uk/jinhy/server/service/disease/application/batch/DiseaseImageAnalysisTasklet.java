@@ -48,8 +48,10 @@ public class DiseaseImageAnalysisTasklet implements Tasklet {
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         DiseaseImageTaskEntity item = readFromKafka();
         if (item == null) {
+            log.info("카프카로부터 전달 받은 아이템 없음");
             return RepeatStatus.FINISHED;
         }
+        log.info("카프카로부터 전달 받은 아이템 TaskId: {}", item.getTaskId());
 
         try {
             item.setStatus(DiseaseStatus.PROCESSING);

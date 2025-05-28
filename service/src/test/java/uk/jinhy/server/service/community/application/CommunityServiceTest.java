@@ -19,6 +19,12 @@ import uk.jinhy.server.api.community.domain.exception.PostNotFoundException;
 import uk.jinhy.server.service.community.domain.*;
 import uk.jinhy.server.service.user.domain.UserEntity;
 import uk.jinhy.server.service.user.domain.UserRepository;
+import uk.jinhy.server.api.community.domain.exception.PostUpdateForbiddenException;
+import uk.jinhy.server.api.community.domain.exception.PostDeleteForbiddenException;
+import uk.jinhy.server.api.community.domain.exception.CommentUpdateForbiddenException;
+import uk.jinhy.server.api.community.domain.exception.CommentDeleteForbiddenException;
+import uk.jinhy.server.api.user.domain.User;
+import uk.jinhy.server.service.user.domain.UserMapper;
 
 import java.util.Arrays;
 import java.util.List;
@@ -42,6 +48,9 @@ class CommunityServiceTest {
 
     @Mock
     private CommunityMapper communityMapper;
+
+    @Mock
+    private UserMapper userMapper;
 
     @InjectMocks
     private CommunityServiceImpl communityService;
@@ -153,30 +162,25 @@ class CommunityServiceTest {
         @DisplayName("사용자는 게시글을 작성할 수 있다")
         void 사용자_게시글_작성() {
             // given
-            Long userId = 1L;
-
             CreatePostDto request = new CreatePostDto();
             request.setTitle("Test Title");
             request.setContent("Test Content");
             request.setCategory("NOTICE");
 
-            UserEntity userEntity = mock(UserEntity.class);
+            User user = mock(User.class);
             CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
             CommunityPostEntity savedEntity = mock(CommunityPostEntity.class);
             CommunityPost returnedPost = mock(CommunityPost.class);
 
-            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
-
             CommunityPostAuthor author = mock(CommunityPostAuthor.class);
-            given(communityMapper.toPostAuthor(userEntity)).willReturn(author);
+            given(communityMapper.toPostAuthor(user)).willReturn(author);
 
             given(communityMapper.toEntity(any(CommunityPost.class))).willReturn(postEntity);
-
             given(postRepository.save(postEntity)).willReturn(savedEntity);
             given(communityMapper.toDomain(savedEntity)).willReturn(returnedPost);
 
             // when
-            CommunityPost result = communityService.createPost(request, userId);
+            CommunityPost result = communityService.createPost(request, user);
 
             // then
             assertThat(result).isEqualTo(returnedPost);
@@ -186,14 +190,19 @@ class CommunityServiceTest {
         @DisplayName("존재하지 않는 사용자가 게시글 작성 시 예외가 발생한다")
         void 존재하지_않는_사용자_게시글_작성시_예외발생() {
             // given
-            Long userId = 999L;
             CreatePostDto request = new CreatePostDto();
-
-            given(userRepository.findById(userId)).willReturn(Optional.empty());
+            request.setTitle("Test Title");
+            request.setContent("Test Content");
+            request.setCategory("NOTICE");
+            
+            User user = mock(User.class);
+            
+            given(communityMapper.toPostAuthor(user))
+                .willThrow(new PostUpdateForbiddenException("게시글 작성 권한이 없습니다."));
 
             // when & then
-            assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> communityService.createPost(request, userId));
+            assertThatExceptionOfType(PostUpdateForbiddenException.class)
+                .isThrownBy(() -> communityService.createPost(request, user));
         }
     }
 
@@ -205,7 +214,6 @@ class CommunityServiceTest {
         void 작성자_자신의_게시글_수정() {
             // given
             Long postId = 1L;
-            Long userId = 1L;
 
             UpdatePostDto request = new UpdatePostDto();
             request.setTitle("Updated Title");
@@ -213,18 +221,16 @@ class CommunityServiceTest {
             request.setCategory("NOTICE");
 
             CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
-            UserEntity userEntity = mock(UserEntity.class);
+            User user = mock(User.class);
             CommunityPost post = mock(CommunityPost.class);
             CommunityPostAuthor author = mock(CommunityPostAuthor.class);
 
             given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
-            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
-
             given(communityMapper.toDomain(postEntity)).willReturn(post);
-            given(communityMapper.toPostAuthor(userEntity)).willReturn(author);
+            given(communityMapper.toPostAuthor(user)).willReturn(author);
 
             // when
-            CommunityPost result = communityService.updatePost(postId, request, userId);
+            CommunityPost result = communityService.updatePost(postId, request, user);
 
             // then
             assertThat(result).isEqualTo(post);
@@ -242,7 +248,7 @@ class CommunityServiceTest {
         void 작성자가_아닌_사용자_게시글_수정시_예외발생() {
             // given
             Long postId = 1L;
-            Long userId = 2L;
+            User user = mock(User.class);
 
             UpdatePostDto request = new UpdatePostDto();
             request.setTitle("Updated Title");
@@ -250,25 +256,14 @@ class CommunityServiceTest {
             request.setCategory("NOTICE");
 
             CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
-            UserEntity userEntity = mock(UserEntity.class);
-            CommunityPost post = mock(CommunityPost.class);
-            CommunityPostAuthor wrongAuthor = mock(CommunityPostAuthor.class);
-
             given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
-            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
-
-            given(communityMapper.toDomain(postEntity)).willReturn(post);
-            given(communityMapper.toPostAuthor(userEntity)).willReturn(wrongAuthor);
-
-            doThrow(new IllegalArgumentException("작성자가 아닌 사용자가 게시글을 수정할 수 없습니다."))
-                .when(post)
-                .update(anyString(), anyString(), any(Category.class), eq(wrongAuthor));
+            
+            given(communityMapper.toPostAuthor(user))
+                .willThrow(new PostUpdateForbiddenException("게시글 수정 권한이 없습니다."));
 
             // when & then
-            assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> communityService.updatePost(postId, request, userId));
-
-            then(communityMapper).should(never()).updateEntity(any(CommunityPostEntity.class), any(CommunityPost.class));
+            assertThatExceptionOfType(PostUpdateForbiddenException.class)
+                .isThrownBy(() -> communityService.updatePost(postId, request, user));
         }
 
         @Test
@@ -276,33 +271,18 @@ class CommunityServiceTest {
         void 존재하지_않는_게시글_수정시_예외발생() {
             // given
             Long postId = 999L;
-            Long userId = 1L;
+            User user = mock(User.class);
 
             UpdatePostDto request = new UpdatePostDto();
+            request.setTitle("Updated Title");
+            request.setContent("Updated Content");
+            request.setCategory("NOTICE");
 
             given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.empty());
 
             // when & then
             assertThatExceptionOfType(PostNotFoundException.class)
-                .isThrownBy(() -> communityService.updatePost(postId, request, userId));
-        }
-
-        @Test
-        @DisplayName("존재하지 않는 사용자가 게시글 수정 시 예외가 발생한다")
-        void 존재하지_않는_사용자_게시글_수정시_예외발생() {
-            // given
-            Long postId = 1L;
-            Long userId = 999L;
-
-            UpdatePostDto request = new UpdatePostDto();
-            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
-
-            given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
-            given(userRepository.findById(userId)).willReturn(Optional.empty());
-
-            // when & then
-            assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> communityService.updatePost(postId, request, userId));
+                .isThrownBy(() -> communityService.updatePost(postId, request, user));
         }
     }
 
@@ -315,20 +295,18 @@ class CommunityServiceTest {
         void 작성자_자신의_게시글_삭제() {
             // given
             Long postId = 1L;
-            Long userId = 1L;
 
             CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
-            UserEntity userEntity = mock(UserEntity.class);
+            User user = mock(User.class);
             CommunityPost post = mock(CommunityPost.class);
             CommunityPostAuthor author = mock(CommunityPostAuthor.class);
 
             given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
-            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
             given(communityMapper.toDomain(postEntity)).willReturn(post);
-            given(communityMapper.toPostAuthor(userEntity)).willReturn(author);
+            given(communityMapper.toPostAuthor(user)).willReturn(author);
 
             // when
-            communityService.deletePost(postId, userId);
+            communityService.deletePost(postId, user);
 
             // then
             then(postRepository).should().delete(postEntity);
@@ -339,24 +317,22 @@ class CommunityServiceTest {
         void 작성자가_아닌_사용자_게시글_삭제시_예외발생() {
             // given
             Long postId = 1L;
-            Long userId = 2L;
 
             CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
-            UserEntity userEntity = mock(UserEntity.class);
+            User user = mock(User.class);
             CommunityPost post = mock(CommunityPost.class);
             CommunityPostAuthor wrongAuthor = mock(CommunityPostAuthor.class);
 
             given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
-            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
             given(communityMapper.toDomain(postEntity)).willReturn(post);
-            given(communityMapper.toPostAuthor(userEntity)).willReturn(wrongAuthor);
+            given(communityMapper.toPostAuthor(user)).willReturn(wrongAuthor);
 
-            doThrow(new IllegalArgumentException("작성자가 아닌 사용자가 게시글을 삭제할 수 없습니다."))
+            doThrow(new PostDeleteForbiddenException("작성자만 삭제할 수 있습니다."))
                 .when(post).deleteValidation(wrongAuthor);
 
             // when & then
-            assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> communityService.deletePost(postId, userId));
+            assertThatExceptionOfType(PostDeleteForbiddenException.class)
+                .isThrownBy(() -> communityService.deletePost(postId, user));
 
             then(postRepository).should(never()).delete(any());
         }
@@ -366,13 +342,13 @@ class CommunityServiceTest {
         void 존재하지_않는_게시글_삭제시_예외발생() {
             // given
             Long postId = 999L;
-            Long userId = 1L;
+            User user = mock(User.class);
 
             given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.empty());
 
             // when & then
             assertThatExceptionOfType(PostNotFoundException.class)
-                .isThrownBy(() -> communityService.deletePost(postId, userId));
+                .isThrownBy(() -> communityService.deletePost(postId, user));
 
             then(postRepository).should(never()).delete(any());
         }
@@ -382,16 +358,17 @@ class CommunityServiceTest {
         void 존재하지_않는_사용자_게시글_삭제시_예외발생() {
             // given
             Long postId = 1L;
-            Long userId = 999L;
+            User user = mock(User.class);
 
             CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
-
             given(postRepository.findByIdWithAuthor(postId)).willReturn(Optional.of(postEntity));
-            given(userRepository.findById(userId)).willReturn(Optional.empty());
+            
+            given(communityMapper.toPostAuthor(user))
+                .willThrow(new PostDeleteForbiddenException("게시글 삭제 권한이 없습니다."));
 
             // when & then
-            assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> communityService.deletePost(postId, userId));
+            assertThatExceptionOfType(PostDeleteForbiddenException.class)
+                .isThrownBy(() -> communityService.deletePost(postId, user));
 
             then(postRepository).should(never()).delete(any());
         }
@@ -406,14 +383,12 @@ class CommunityServiceTest {
         void 사용자_댓글_작성() {
             // given
             Long postId = 1L;
-            Long userId = 1L;
 
             AddCommentDto request = new AddCommentDto();
             request.setContent("Test Comment");
 
             CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
-            UserEntity userEntity = mock(UserEntity.class);
-
+            User user = mock(User.class);
             CommunityPost post = mock(CommunityPost.class);
             CommunityComment comment = mock(CommunityComment.class);
             CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
@@ -421,12 +396,10 @@ class CommunityServiceTest {
             CommunityComment returnedComment = mock(CommunityComment.class);
 
             given(postRepository.findById(postId)).willReturn(Optional.of(postEntity));
-            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
-
             given(communityMapper.toDomain(postEntity)).willReturn(post);
 
             CommunityCommentAuthor author = mock(CommunityCommentAuthor.class);
-            given(communityMapper.toCommentAuthor(userEntity)).willReturn(author);
+            given(communityMapper.toCommentAuthor(user)).willReturn(author);
 
             given(post.addComment(author, request.getContent())).willReturn(comment);
 
@@ -435,7 +408,7 @@ class CommunityServiceTest {
             given(communityMapper.toDomain(savedEntity)).willReturn(returnedComment);
 
             // when
-            CommunityComment result = communityService.addComment(postId, request, userId);
+            CommunityComment result = communityService.addComment(postId, request, user);
 
             // then
             assertThat(result).isEqualTo(returnedComment);
@@ -447,15 +420,16 @@ class CommunityServiceTest {
         void 존재하지_않는_게시글_댓글_작성시_예외발생() {
             // given
             Long postId = 999L;
-            Long userId = 1L;
+            User user = mock(User.class);
 
             AddCommentDto request = new AddCommentDto();
+            request.setContent("Test Comment");
 
             given(postRepository.findById(postId)).willReturn(Optional.empty());
 
             // when & then
             assertThatExceptionOfType(PostNotFoundException.class)
-                .isThrownBy(() -> communityService.addComment(postId, request, userId));
+                .isThrownBy(() -> communityService.addComment(postId, request, user));
 
             then(commentRepository).should(never()).save(any());
         }
@@ -465,17 +439,23 @@ class CommunityServiceTest {
         void 존재하지_않는_사용자_댓글_작성시_예외발생() {
             // given
             Long postId = 1L;
-            Long userId = 999L;
+            User user = mock(User.class);
 
             AddCommentDto request = new AddCommentDto();
-            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
+            request.setContent("Test Comment");
 
+            CommunityPostEntity postEntity = mock(CommunityPostEntity.class);
+            CommunityPost post = mock(CommunityPost.class);
+            
             given(postRepository.findById(postId)).willReturn(Optional.of(postEntity));
-            given(userRepository.findById(userId)).willReturn(Optional.empty());
+            given(communityMapper.toDomain(postEntity)).willReturn(post);
+            
+            doThrow(new CommentUpdateForbiddenException("댓글 작성 권한이 없습니다."))
+                .when(post).addComment(any(), anyString());
 
             // when & then
-            assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> communityService.addComment(postId, request, userId));
+            assertThatExceptionOfType(CommentUpdateForbiddenException.class)
+                .isThrownBy(() -> communityService.addComment(postId, request, user));
 
             then(commentRepository).should(never()).save(any());
         }
@@ -490,30 +470,27 @@ class CommunityServiceTest {
         void 작성자_자신의_댓글_수정() {
             // given
             Long commentId = 1L;
-            Long userId = 1L;
 
             UpdateCommentDto request = new UpdateCommentDto();
             request.setContent("Updated Comment");
 
             CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
-            UserEntity userEntity = mock(UserEntity.class);
+            User user = mock(User.class);
 
             CommunityComment comment = mock(CommunityComment.class);
             CommunityCommentAuthor author = mock(CommunityCommentAuthor.class);
 
             given(commentRepository.findById(commentId)).willReturn(Optional.of(commentEntity));
-            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
-
             given(communityMapper.toDomain(commentEntity)).willReturn(comment);
-            given(communityMapper.toCommentAuthor(userEntity)).willReturn(author);
+            given(communityMapper.toCommentAuthor(user)).willReturn(author);
 
             // when
-            CommunityComment result = communityService.updateComment(commentId, request, userId);
+            CommunityComment result = communityService.updateComment(commentId, request, user);
 
             // then
             assertThat(result).isEqualTo(comment);
             then(communityMapper).should().updateEntity(eq(commentEntity), eq(comment));
-            then(comment).should().updateContent(author, request.getContent());
+            then(comment).should().updateContent(eq(author), eq(request.getContent()));
         }
 
         @Test
@@ -521,30 +498,26 @@ class CommunityServiceTest {
         void 작성자가_아닌_사용자_댓글_수정시_예외발생() {
             // given
             Long commentId = 1L;
-            Long userId = 2L;
 
             UpdateCommentDto request = new UpdateCommentDto();
             request.setContent("Updated Comment");
 
             CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
-            UserEntity userEntity = mock(UserEntity.class);
+            User user = mock(User.class);
 
             CommunityComment comment = mock(CommunityComment.class);
             CommunityCommentAuthor wrongAuthor = mock(CommunityCommentAuthor.class);
 
             given(commentRepository.findById(commentId)).willReturn(Optional.of(commentEntity));
-            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
-
             given(communityMapper.toDomain(commentEntity)).willReturn(comment);
-            given(communityMapper.toCommentAuthor(userEntity)).willReturn(wrongAuthor);
+            given(communityMapper.toCommentAuthor(user)).willReturn(wrongAuthor);
 
-            // 작성자가 아니라면 예외
-            doThrow(new IllegalArgumentException("작성자가 아닌 사용자가 댓글을 수정할 수 없습니다."))
+            doThrow(new CommentUpdateForbiddenException("댓글 작성자가 아닙니다."))
                 .when(comment).updateContent(eq(wrongAuthor), anyString());
 
             // when & then
-            assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> communityService.updateComment(commentId, request, userId));
+            assertThatExceptionOfType(CommentUpdateForbiddenException.class)
+                .isThrownBy(() -> communityService.updateComment(commentId, request, user));
 
             then(communityMapper).should(never()).updateEntity(any(CommunityCommentEntity.class), any(CommunityComment.class));
         }
@@ -554,15 +527,18 @@ class CommunityServiceTest {
         void 존재하지_않는_댓글_수정시_예외발생() {
             // given
             Long commentId = 999L;
-            Long userId = 1L;
+            User user = mock(User.class);
 
             UpdateCommentDto request = new UpdateCommentDto();
+            request.setContent("Updated Comment");
 
             given(commentRepository.findById(commentId)).willReturn(Optional.empty());
 
             // when & then
             assertThatExceptionOfType(CommentNotFoundException.class)
-                .isThrownBy(() -> communityService.updateComment(commentId, request, userId));
+                .isThrownBy(() -> communityService.updateComment(commentId, request, user));
+
+            then(communityMapper).should(never()).updateEntity(any(CommunityCommentEntity.class), any(CommunityComment.class));
         }
 
         @Test
@@ -570,19 +546,20 @@ class CommunityServiceTest {
         void 존재하지_않는_사용자_댓글_수정시_예외발생() {
             // given
             Long commentId = 1L;
-            Long userId = 999L;
+            User user = mock(User.class);
 
             UpdateCommentDto request = new UpdateCommentDto();
-            CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
+            request.setContent("Updated Comment");
 
+            CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
             given(commentRepository.findById(commentId)).willReturn(Optional.of(commentEntity));
-            given(userRepository.findById(userId)).willReturn(Optional.empty());
+            
+            given(communityMapper.toCommentAuthor(user))
+                .willThrow(new CommentUpdateForbiddenException("댓글 수정 권한이 없습니다."));
 
             // when & then
-            assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> communityService.updateComment(commentId, request, userId));
-
-            then(communityMapper).should(never()).updateEntity(any(CommunityCommentEntity.class), any(CommunityComment.class));
+            assertThatExceptionOfType(CommentUpdateForbiddenException.class)
+                .isThrownBy(() -> communityService.updateComment(commentId, request, user));
         }
     }
 
@@ -595,22 +572,19 @@ class CommunityServiceTest {
         void 작성자_자신의_댓글_삭제() {
             // given
             Long commentId = 1L;
-            Long userId = 1L;
 
             CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
-            UserEntity userEntity = mock(UserEntity.class);
+            User user = mock(User.class);
 
             CommunityComment comment = mock(CommunityComment.class);
             CommunityCommentAuthor author = mock(CommunityCommentAuthor.class);
 
             given(commentRepository.findById(commentId)).willReturn(Optional.of(commentEntity));
-            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
-
             given(communityMapper.toDomain(commentEntity)).willReturn(comment);
-            given(communityMapper.toCommentAuthor(userEntity)).willReturn(author);
+            given(communityMapper.toCommentAuthor(user)).willReturn(author);
 
             // when
-            communityService.deleteComment(commentId, userId);
+            communityService.deleteComment(commentId, user);
 
             // then
             then(commentRepository).should().delete(commentEntity);
@@ -621,26 +595,23 @@ class CommunityServiceTest {
         void 작성자가_아닌_사용자_댓글_삭제시_예외발생() {
             // given
             Long commentId = 1L;
-            Long userId = 2L;
 
             CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
-            UserEntity userEntity = mock(UserEntity.class);
+            User user = mock(User.class);
 
             CommunityComment comment = mock(CommunityComment.class);
             CommunityCommentAuthor wrongAuthor = mock(CommunityCommentAuthor.class);
 
             given(commentRepository.findById(commentId)).willReturn(Optional.of(commentEntity));
-            given(userRepository.findById(userId)).willReturn(Optional.of(userEntity));
-
             given(communityMapper.toDomain(commentEntity)).willReturn(comment);
-            given(communityMapper.toCommentAuthor(userEntity)).willReturn(wrongAuthor);
+            given(communityMapper.toCommentAuthor(user)).willReturn(wrongAuthor);
 
-            doThrow(new IllegalArgumentException("작성자가 아닌 사용자가 댓글을 삭제할 수 없습니다."))
+            doThrow(new CommentDeleteForbiddenException("작성자만 삭제할 수 있습니다."))
                 .when(comment).deleteValidation(wrongAuthor);
 
             // when & then
-            assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> communityService.deleteComment(commentId, userId));
+            assertThatExceptionOfType(CommentDeleteForbiddenException.class)
+                .isThrownBy(() -> communityService.deleteComment(commentId, user));
 
             then(commentRepository).should(never()).delete(any());
         }
@@ -650,13 +621,13 @@ class CommunityServiceTest {
         void 존재하지_않는_댓글_삭제시_예외발생() {
             // given
             Long commentId = 999L;
-            Long userId = 1L;
+            User user = mock(User.class);
 
             given(commentRepository.findById(commentId)).willReturn(Optional.empty());
 
             // when & then
             assertThatExceptionOfType(CommentNotFoundException.class)
-                .isThrownBy(() -> communityService.deleteComment(commentId, userId));
+                .isThrownBy(() -> communityService.deleteComment(commentId, user));
 
             then(commentRepository).should(never()).delete(any());
         }
@@ -666,16 +637,17 @@ class CommunityServiceTest {
         void 존재하지_않는_사용자_댓글_삭제시_예외발생() {
             // given
             Long commentId = 1L;
-            Long userId = 999L;
+            User user = mock(User.class);
 
             CommunityCommentEntity commentEntity = mock(CommunityCommentEntity.class);
-
             given(commentRepository.findById(commentId)).willReturn(Optional.of(commentEntity));
-            given(userRepository.findById(userId)).willReturn(Optional.empty());
+            
+            given(communityMapper.toCommentAuthor(user))
+                .willThrow(new CommentDeleteForbiddenException("댓글 삭제 권한이 없습니다."));
 
             // when & then
-            assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> communityService.deleteComment(commentId, userId));
+            assertThatExceptionOfType(CommentDeleteForbiddenException.class)
+                .isThrownBy(() -> communityService.deleteComment(commentId, user));
 
             then(commentRepository).should(never()).delete(any());
         }

@@ -48,11 +48,13 @@ public class DiseaseImageJobLauncher {
                     .toJobParameters();
 
                 try {
+                    log.info("질병 분석 실행");
                     jobLauncher.run(diseaseImageAnalysisJob, jobParameters);
                 } catch (Exception e) {
                     log.error("질병 분석 작업 실행 중 오류가 발생했습니다", e);
                 }
             }
+            log.info("질병 분석 실행 완료");
         } catch (InterruptedException e) {
             log.error("질병 분석 작업 준비 중 오류가 발생했습니다", e);
         } finally {
