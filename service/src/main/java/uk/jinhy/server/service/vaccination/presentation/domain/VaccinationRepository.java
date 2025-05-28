@@ -1,8 +1,6 @@
-package uk.jinhy.server.service.vaccination.presentation;
+package uk.jinhy.server.service.vaccination.presentation.domain;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.JpaRepository;
-import uk.jinhy.server.service.domain.VaccinationEntity;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
