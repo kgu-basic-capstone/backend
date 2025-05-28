@@ -2,7 +2,7 @@ package uk.jinhy.server.service.pet.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import uk.jinhy.server.service.domain.VaccinationEntity;
+import uk.jinhy.server.service.vaccination.presentation.domain.VaccinationEntity;
 import uk.jinhy.server.service.user.domain.UserEntity;
 
 
@@ -39,10 +39,12 @@ public class PetEntity {
     private LocalDate birthDate;
 
     @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder. Default
     private List<HealthRecordEntity> healthRecords = new ArrayList<>();
 
     // 백신 기록 (새로 추가)
     @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder. Default
     private List<VaccinationEntity> vaccinations = new ArrayList<>();
 
     @Builder
@@ -69,5 +71,9 @@ public class PetEntity {
         return this.vaccinations.stream()
             .filter(record -> record.getVaccinationDate().isAfter(dateTime.toLocalDate()))
             .collect(Collectors.toList());
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

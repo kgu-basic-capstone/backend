@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 public class DiseaseImageMessage {
     @JsonProperty("type")
+    @Builder.Default
     private String type = "diseaseImageMessage";
 
     private String taskId;

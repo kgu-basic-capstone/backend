@@ -3,10 +3,14 @@ package uk.jinhy.server.service.vaccination.presentation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.jinhy.server.api.vaccination.presentation.exception.VaccinationNotFoundException;
 import uk.jinhy.server.api.vaccination.presentation.VaccinationDto;
-import uk.jinhy.server.service.domain.VaccinationEntity;
+import uk.jinhy.server.service.pet.exception.PetNotFoundException;
+import uk.jinhy.server.service.vaccination.presentation.domain.VaccinationEntity;
 import uk.jinhy.server.service.pet.domain.PetEntity;
 import uk.jinhy.server.service.pet.domain.PetRepository;
+import uk.jinhy.server.service.vaccination.presentation.domain.VaccinationMapper;
+import uk.jinhy.server.service.vaccination.presentation.domain.VaccinationRepository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,12 +21,13 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class VaccinationService {
     private final VaccinationRepository vaccinationRepository;
+    private final VaccinationMapper vaccinationMapper;
     private final PetRepository petRepository;
 
     @Transactional
     public VaccinationDto.VaccinationResponse addVaccination(Long petId, VaccinationDto.VaccinationRequest request) {
         PetEntity pet = petRepository.findById(petId)
-            .orElseThrow(() -> new RuntimeException("Pet not found with id: " + petId));
+            .orElseThrow(() -> new PetNotFoundException(petId));
 
         VaccinationEntity vaccination = VaccinationEntity.builder()
             .pet(pet)
@@ -30,10 +35,11 @@ public class VaccinationService {
             .vaccinationDate(request.getVaccinationDate())
             .nextVaccinationDate(request.getNextVaccinationDate())
             .isCompleted(false)
+            .statusType(request.getStatusType())
             .build();
 
         VaccinationEntity savedVaccination = vaccinationRepository.save(vaccination);
-        return VaccinationMapper.INSTANCE.fromEntity(savedVaccination);
+        return vaccinationMapper.fromEntity(savedVaccination);
     }
 
     public VaccinationDto.VaccinationListResponse getVaccinations(Long petId, Boolean completed, Boolean upcoming) {
@@ -43,7 +49,6 @@ public class VaccinationService {
         }
 
         List<VaccinationEntity> filteredVaccinations = vaccinationRepository.findByPetId(petId);
-
         if (completed != null) {
             filteredVaccinations = filteredVaccinations.stream()
                 .filter(v -> v.isCompleted() == completed) // VaccinationEntity의 isCompleted() 사용
@@ -59,7 +64,7 @@ public class VaccinationService {
         }
 
         List<VaccinationDto.VaccinationResponse> vaccinationResponses = filteredVaccinations.stream()
-            .map(VaccinationMapper.INSTANCE::fromEntity) // VaccinationMapper가 올바르게 설정되어 있다고 가정
+            .map(vaccinationMapper::fromEntity)
             .collect(Collectors.toList());
 
         return VaccinationDto.VaccinationListResponse.builder()
@@ -67,28 +72,24 @@ public class VaccinationService {
             .total(vaccinationResponses.size())
             .build();
     }
-
     @Transactional
     public void deleteVaccination(Long petId, Long vaccinationId) {
         VaccinationEntity vaccination = vaccinationRepository.findById(vaccinationId)
-            .orElseThrow(() -> new RuntimeException("Vaccination not found with id: " + vaccinationId));
+            .orElseThrow(() -> new VaccinationNotFoundException(vaccinationId));
 
         if (!vaccination.getPet().getId().equals(petId)) {
             throw new RuntimeException("Vaccination does not belong to the specified pet");
         }
-
         vaccinationRepository.delete(vaccination);
     }
 
     @Transactional
     public VaccinationDto.VaccinationResponse completeVaccination(Long petId, Long vaccinationId, boolean completed) {
-        VaccinationEntity vaccination = vaccinationRepository.findById(vaccinationId)
-            .orElseThrow(() -> new RuntimeException("Vaccination not found with id: " + vaccinationId));
+        VaccinationEntity vaccination = vaccinationRepository.findById(vaccinationId).orElseThrow(() -> new VaccinationNotFoundException(vaccinationId));
 
         if (!vaccination.getPet().getId().equals(petId)) {
-            throw new RuntimeException("Vaccination does not belong to the specified pet");
+            throw new VaccinationNotFoundException("Vaccination does not belong to the specified pet");
         }
-
         vaccination.setIsCompleted(completed);
         VaccinationEntity updatedVaccination = vaccinationRepository.save(vaccination);
         return VaccinationMapper.INSTANCE.fromEntity(updatedVaccination);

@@ -1,10 +1,11 @@
-package uk.jinhy.server.service.domain;
+package uk.jinhy.server.service.vaccination.presentation.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import uk.jinhy.server.api.vaccination.presentation.VaccinationStatusType;
 import uk.jinhy.server.service.pet.domain.PetEntity;
 import lombok.*;
 
@@ -35,16 +36,26 @@ public class VaccinationEntity {
     @Column(name = "is_completed", nullable = false)
     private boolean isCompleted;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_type")
+    private VaccinationStatusType vaccinationStatus;
+
     @Builder
-    public VaccinationEntity(PetEntity pet, String vaccineName,
+    public VaccinationEntity(Long id, PetEntity pet, String vaccineName,
                              LocalDate vaccinationDate,
                              LocalDate nextVaccinationDate,
-                             Boolean isCompleted) {
+                             Boolean isCompleted,
+                             VaccinationStatusType statusType) {
+        this.id = id;
         this.pet = pet;
         this.vaccineName = vaccineName;
         this.vaccinationDate = vaccinationDate;
         this.nextVaccinationDate = nextVaccinationDate;
-        this.isCompleted = isCompleted;
+        this.isCompleted = (isCompleted != null) ? isCompleted : false;
+        this.vaccinationStatus = statusType;
+    }
+    public void setStatusType(VaccinationStatusType statusType) {
+        this.vaccinationStatus = statusType;
     }
 
 
@@ -75,4 +86,6 @@ public class VaccinationEntity {
     public void setNextVaccinationDate(LocalDate nextVaccinationDate) {
         this.nextVaccinationDate = nextVaccinationDate;
     }
+
+
 }

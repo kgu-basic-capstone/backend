@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import uk.jinhy.server.api.vaccination.presentation.exception.VaccinationNotFoundException;
 
 @Slf4j
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -23,5 +24,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleHttpException(HttpException ex) {
         return ResponseEntity.status(ex.getStatus())
             .body(ErrorResponse.of(ex.getMessage(), ex.getCode()));
+    }
+
+    @ExceptionHandler(VaccinationNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleVaccinationNotFoundException(VaccinationNotFoundException ex) {
+        ErrorResponse errorResponse = ErrorResponse.of(
+            ex.getMessage(),
+            Integer.toString(HttpStatus.NOT_FOUND.value())
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 }
