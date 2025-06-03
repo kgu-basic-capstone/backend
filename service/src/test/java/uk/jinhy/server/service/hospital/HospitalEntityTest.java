@@ -1,7 +1,12 @@
-package uk.jinhy.server.service.domain;
+package uk.jinhy.server.service.hospital;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import uk.jinhy.server.service.domain.HospitalEntity;
+import uk.jinhy.server.service.domain.HospitalReservationEntity;
+import uk.jinhy.server.service.domain.PetFactory;
+import uk.jinhy.server.service.domain.UserFactory;
+
 import java.time.LocalDateTime;
 import static org.assertj.core.api.Assertions.assertThat;
 
